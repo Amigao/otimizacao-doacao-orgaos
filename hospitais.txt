@@ -6,12 +6,12 @@ AP - Macapá: “CNDO” - CEP: 68900-000
 BA - Salvador: “OPO HGRS” - CEP: 41810-012
 BA - Feira de Santana: “OPO - Feira de Santana” - CEP: 44094-000
 CE - Fortaleza: “OPO - HGF” - CEP: 60175-205
-CE - Juazeiro do Norte: “OPO - Cariri” - CEP: 63.050.060
+CE - Juazeiro do Norte: “OPO - Cariri” - CEP: 63050-060
 DF - Brasília: “SHMS Área Especial A” - CEP: 70335-900
 ES - Vitória: “CNCDO” - CEP: 29050-720
 GO - Goiânia: “CRER” - CEP: 74653-230
 MA - São Luís: “Hospital Materno Infantil” - CEP: 65020-290
-MG - Belo Horizonte: “Hospital João XXIII” - CEP: 30130 100
+MG - Belo Horizonte: “Hospital João XXIII” - CEP: 30130-100
 MG - Uberlândia: “CNCDO Oeste - Uberlândia” - CEP: 38400-204
 MS - Campo Grande: “CET-MS” - CEP: 79002-072
 MT - Cuiabá: “CET-MT” - CEP: 78020-450
