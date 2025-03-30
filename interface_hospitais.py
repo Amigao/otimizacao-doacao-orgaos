@@ -1,18 +1,19 @@
 import re
 
-class LocalizacaoEquipe:
-    def __init__(self, estado, cidade, hospitais):
+class Hospital:
+    def __init__(self, estado, cidade, nome, cep, orgaos_disponiveis=None):
         self.estado = estado
         self.cidade = cidade
-        self.hospitais = hospitais  # Lista de tuplas (nome_hospital, cep)
+        self.nome = nome
+        self.cep = cep  
+        self.orgaos_disponiveis = orgaos_disponiveis or []
+
 
     def __repr__(self):
-        hospitais_info = ", ".join([f"{nome} (CEP: {cep})" for nome, cep in self.hospitais])
-        return f"LocalizacaoEquipe(Estado: {self.estado}, Cidade: {self.cidade}, Hospitais: {hospitais_info})"
-
+        return f"Hospital(Cidade: {self.cidade}, Nome: {self.nome}, Cep: {self.cep})"
 
 def carregar_hospitais(nome_arquivo):
-    localizacoes = {}
+    localizacoes = []
 
     with open(nome_arquivo, "r", encoding="utf-8") as arquivo:
         for linha in arquivo:
@@ -21,14 +22,14 @@ def carregar_hospitais(nome_arquivo):
                 match = re.match(r"([A-Z]{2}) - (.*?):\s*“(.*?)”\s*- CEP:\s*([\d.-]+)", linha.strip())
                 if match:
                     estado, cidade, nome_hospital, cep = match.groups()
-                    chave = (estado, cidade)
 
-                    if chave not in localizacoes:
-                        localizacoes[chave] = LocalizacaoEquipe(estado, cidade, [])
+                    # Cria o objeto Hospital com as informações
+                    hospital = Hospital(estado, cidade, nome_hospital, cep)
 
-                    localizacoes[chave].hospitais.append((nome_hospital, cep))
+                    # Adiciona o hospital à lista de localizações
+                    localizacoes.append(hospital)
 
-    return list(localizacoes.values())
+    return localizacoes
 
 
 # Exemplo de uso
