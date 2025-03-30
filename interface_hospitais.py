@@ -10,7 +10,8 @@ class Hospital:
 
 
     def __repr__(self):
-        return f"Hospital(Cidade: {self.cidade}, Nome: {self.nome}, Cep: {self.cep})"
+        return f"Hospital(Cidade: {self.cidade}, Nome: {self.nome}, Cep: {self.cep})" 
+        # Orgaos: {self.orgaos_disponiveis})"
 
 def carregar_hospitais(nome_arquivo):
     localizacoes = []
