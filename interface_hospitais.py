@@ -10,7 +10,7 @@ class Hospital:
 
 
     def __repr__(self):
-        return f"Hospital(Cidade: {self.cidade}, Nome: {self.nome}, Cep: {self.cep})" 
+        return f"{self.nome}, ({self.cidade}-{self.estado}, {self.cep})" 
         # Orgaos: {self.orgaos_disponiveis})"
 
 def carregar_hospitais(nome_arquivo):
@@ -34,6 +34,6 @@ def carregar_hospitais(nome_arquivo):
 
 
 # Exemplo de uso
-hospitais = carregar_hospitais("hospitais.txt")
-for hospital in hospitais:
-    print(hospital)
+#hospitais = carregar_hospitais("hospitais.txt")
+#for hospital in hospitais:
+  #  print(hospital)

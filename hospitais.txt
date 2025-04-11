@@ -2,7 +2,6 @@ AC - Rio Branco: “Hospital das Clínicas” - CEP: 69908650
 AL - Maceió: “OPO HGE” - CEP: 57010001
 AM - Manaus: “Fundação Hospital Adriano Jorge” - CEP: 69065001
 AM - Manaus: “OPO AM” - CEP: 69082230
-AP - Macapá: “CNDO” - CEP: 68900000
 BA - Salvador: “OPO HGRS” - CEP: 41810012
 BA - Feira de Santana: “OPO - Feira de Santana” - CEP: 44094000
 CE - Fortaleza: “OPO - HGF” - CEP: 60175205
@@ -14,7 +13,6 @@ MA - São Luís: “Hospital Materno Infantil” - CEP: 65020290
 MG - Belo Horizonte: “Hospital João XXIII” - CEP: 30130100
 MG - Uberlândia: “CNCDO Oeste - Uberlândia” - CEP: 38400204
 MS - Campo Grande: “CET-MS” - CEP: 79002072
-MT - Cuiabá: “CET-MT” - CEP: 78020450
 PA - Belém: “CETEA” - CEP: 66095200
 PB - João Pessoa: “Instituto de Previdência de Estado da Paraíba” - CEP: 58030020 
 PE - Recife: “Real Hospital Português de Beneficência em Pernambuco” - CEP: 52010902
@@ -28,7 +26,6 @@ RN - Natal: “OPO RN” - CEP: 59015380
 RO - Porto Velho: “HB - Dr. Ary Pinheiro” - CEP: 76821092
 RR - Boa Vista: “CET - RO” - CEP: 69305455
 RS - Porto Alegre: “OPO I ISCMPA” - CEP: 90020090
-RS - Lajeado: “OPO VI BRUNO BORN” - CEP: 95900000
 SC - Florianópolis: “CNCDOSC” - CEP: 88015530
 SP - São Paulo: “OPO / HC” - CEP: 05403000
 SP - São José do Rio Preto: “OPO / São José do Rio Preto” - CEP: 15090000
