@@ -1,0 +1,67 @@
+Criar um grafo interligando as cidades pq o transporte vai ser por via terrestre.
+para cada ligacao do grafo vai ter um custo G e um custo de avaliaçao que da a soma total
+A partir disso da para começar a pensar em acrescentar mais coisa... Essa conexao de cidade em cidade
+feita pelo carro seria somente de cidades que tem polos de transplante, nao literalmente de cidade em cidade,
+estaremos simplificando para o trabalho nao ficar extremamente complexo.
+
+
+
+
+import networkx as nx
+import heapq
+
+# Criar o grafo
+G = nx.Graph()
+
+edges = [
+    ("SJ Preto", "Ribeirão Preto", 168),
+    ("Ribeirão Preto", "São Paulo", 291),
+    ("São Paulo", "SJ Preto", 416),
+    ("São Paulo", "BarraMansa", 279),
+    ("BarraMansa", "Rio de Janeiro", 79),
+    ("Rio de Janeiro", "Vitória", 517)
+]
+
+G.add_weighted_edges_from(edges)
+
+# Heurística (distância em linha reta até Vitória)
+heuristica = {
+    "SJ Preto": 990,
+    "Ribeirão Preto": 822,
+    "São Paulo": 730,
+    "BarraMansa": 627,
+    "Rio de Janeiro": 521,
+    "Vitória": 0
+}
+
+def a_star_search(graph, start, goal, heuristic):
+    # Fila de prioridade: (f(n), g(n), cidade atual, caminho)
+    fila = [(heuristic[start], 0, start, [start])]
+    visitados = {}
+
+    while fila:
+        f, g, atual, caminho = heapq.heappop(fila)
+
+        # Se chegamos ao destino, retornamos o caminho e os custos
+        if atual == goal:
+            return caminho, g, f
+
+        # Se já visitamos essa cidade com custo menor, ignoramos
+        if atual in visitados and visitados[atual] <= g:
+            continue
+        visitados[atual] = g
+
+        for vizinho in graph.neighbors(atual):
+            custo_g = g + graph[atual][vizinho]['weight']
+            custo_f = custo_g + heuristic[vizinho]
+            heapq.heappush(fila, (custo_f, custo_g, vizinho, caminho + [vizinho]))
+
+    return None, float("inf"), float("inf")
+
+# Executar busca A*
+caminho, distancia_total, custo_estimado = a_star_search(G, "SJ Preto", "Vitória", heuristica)
+
+# Exibir resultados
+print("Caminho (A*):", " -> ".join(caminho))
+print("Distância total real g(n) (km):", distancia_total)
+print("Custo estimado final f(n) = g(n) + h(n):", custo_estimado)
