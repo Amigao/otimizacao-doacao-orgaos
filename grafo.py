@@ -78,9 +78,12 @@ for coord in coords:
     grafo.adicionar_vertice(hospitais[i].nome, float(coords[i][0]), float(coords[i][1]))
     i = i+1
 
-#grafo.adicionar_aresta('São Paulo', 'Rio de Janeiro', 430)
-#grafo.adicionar_aresta('São Paulo', 'Belo Horizonte', 586)
+print("<< Vértices do Grafo >>")
+for v in grafo.vertices.items():
+    print(v[0])
+    print("Coordenadas: ", v[1], "\n")
 
+grafo.adicionar_aresta('CNCDOSC', 'OPO I ISCMPA', 430)
 
 #caminho, custo = grafo.caminho_minimo('São Paulo', 'Brasília')
 #print("Caminho mínimo:", caminho)
