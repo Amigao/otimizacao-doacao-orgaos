@@ -88,6 +88,6 @@ caminho, custo_total = astar(grafo, inicio, meta, coordenadas)
 
 if caminho:
     print("Caminho escolhido:", " -> ".join(caminho))
-    print("Custo total:", custo_total)
+    print("Custo Final:", custo_total)
 else:
     print(f"Não foi encontrado um caminho de {inicio} até {meta}.")
