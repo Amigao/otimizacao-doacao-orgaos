@@ -32,6 +32,19 @@ def carregar_hospitais(nome_arquivo):
 
     return localizacoes
 
+def carregar_coordenadas(arq):
+
+    coords = []
+
+    with open(arq, "r", encoding="utf-8") as arquivo:
+        for linha in arquivo:
+            if linha.strip():  # Ignora linhas vazias
+                dados = linha.strip().split(',')
+                if len(dados) == 2:
+                    lat, lon = dados
+                    coords.append((lat, lon))
+
+    return coords
 
 # Exemplo de uso
 #hospitais = carregar_hospitais("hospitais.txt")

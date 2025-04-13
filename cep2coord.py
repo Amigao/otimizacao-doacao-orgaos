@@ -37,19 +37,22 @@ def get_coordinates_from_cep(cep):
     return None, None
 
 # Lista de CEPs
+"""
 ceps = []
 hospitais = carregar_hospitais("hospitais.txt")
 for hospital in hospitais:
     ceps.append(hospital.cep)
 
-"""
+
+
 # Coletar todas as coordenadas
 coordenadas = []
 for idx, cep in enumerate(ceps):
     lat, lon = get_coordinates_from_cep(cep)
     if lat and lon:
-        print(f"({lat}, {lon})")
+        print(f"{lat}, {lon}")
         coordenadas.append((lat, lon))
     else:
         print(f"[{idx}] Não foi possível obter coordenadas para o CEP {cep}")
+        
 """

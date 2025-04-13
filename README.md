@@ -30,4 +30,5 @@ Este sistema pode ser utilizado para pesquisa e experimentação de algoritmos d
 
 ## Alunos
 
+- André Jacob Suaide - 13864673
 - Pedro Arthur Françoso - 12547301
