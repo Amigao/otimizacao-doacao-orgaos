@@ -40,6 +40,12 @@ def calc_heuristica(cidade, meta, coords):
     x2, y2 = coords[meta]
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
+
+
+#----------------------------------
+## Basicamente AQUI ESTÁ A IMPLEMENTAÇÃO DO ALGORITMO A*
+#A* é um algoritmo de busca que utiliza uma heurística para guiar a busca
+# O algoritmo A* combina a busca de custo uniforme com a busca informada
 def astar(grafo, inicio, meta, coords):
 
     open_set = []
@@ -76,6 +82,8 @@ def astar(grafo, inicio, meta, coords):
                 heapq.heappush(open_set, (f_vizinho, vizinho, novo_g))
                 came_from[vizinho] = atual
     return None, float('inf')
+
+#----------------------------------
 
 inicio = "Vitória"
 meta = "SJ Preto"  # Altere a cidade meta conforme necessário
