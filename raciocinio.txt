@@ -6,6 +6,10 @@ estaremos simplificando para o trabalho nao ficar extremamente complexo.
 
 
 
+-Muita coisa feita, o certo é eu fazer esse grafo na mão mesmo... colocando as conexoes entre as cidades
+e colocando suas coordenadas. Enfim falta só isso... trabalho de corno
+
+
 
 import networkx as nx
 import heapq

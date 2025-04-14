@@ -1,5 +1,8 @@
 import heapq
 import math
+import grafo
+import matplotlib.pyplot as plt
+
 
 # Dados das arestas entre cidades (g(n))
 distancias_cidades = [
