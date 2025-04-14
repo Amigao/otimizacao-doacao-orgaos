@@ -27,25 +27,18 @@ for origem, destino, custo in distancias_cidades:
     if origem not in grafo:
         grafo[origem] = []
     grafo[origem].append((destino, custo))
-    # Se desejar tratar as arestas como bidirecionais, descomente o trecho abaixo:
     if destino not in grafo:
          grafo[destino] = []
     grafo[destino].append((origem, custo))
 
 def calc_heuristica(cidade, meta, coords):
-    """
-    Calcula a heurística como a distância euclidiana entre 'cidade' e 'meta'
-    utilizando as coordenadas fornecidas.
-    """
+
     x1, y1 = coords[cidade]
     x2, y2 = coords[meta]
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
 def astar(grafo, inicio, meta, coords):
-    """
-    Algoritmo A* dinâmico que utiliza a distância euclidiana como heurística,
-    com _prints_ para acompanhar as mudanças de nó.
-    """
+
     open_set = []
     h_inicial = calc_heuristica(inicio, meta, coords)
     heapq.heappush(open_set, (h_inicial, inicio, 0))
