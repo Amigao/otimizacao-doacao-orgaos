@@ -1,8 +1,6 @@
 import heapq
 import math
-import grafo
 import matplotlib.pyplot as plt
-
 
 # Dados das arestas entre cidades (g(n))
 distancias_cidades = [
@@ -11,20 +9,24 @@ distancias_cidades = [
     ("São Paulo", "SJ Preto", 416),
     ("São Paulo", "BarraMansa", 279),
     ("BarraMansa", "Rio de Janeiro", 79),
-    ("Rio de Janeiro", "Vitória", 517)
+    ("Rio de Janeiro", "Vitória", 517),
+    ("SJ Preto", "Uberlandia", 318),
+    ("Uberlandia", "Belo Horizonte", 240),
 ]
 
-# Exemplo de coordenadas para cada cidade (valores fictícios para demonstração)
+# Atualize o dicionário de coordenadas para incluir também Uberlandia e Belo Horizonte
 coordenadas = {
-    "SJ Preto": (0, 0),
-    "Ribeirão Preto": (100, 30),
+    "SJ Preto": (64,95),
+    "Ribeirão Preto": (150, 80),
     "São Paulo": (200, 50),
     "BarraMansa": (300, 20),
     "Rio de Janeiro": (400, 100),
-    "Vitória": (500, 150)
+    "Vitória": (500, 150),
+    "Uberlandia": (179, 130),      
+    "Belo Horizonte": (300, 120)     
 }
 
-# Construindo o grafo a partir da lista de arestas.
+# Construindo o grafo (dicionário de vizinhança) a partir da lista de arestas.
 grafo = {}
 for origem, destino, custo in distancias_cidades:
     if origem not in grafo:
@@ -35,25 +37,19 @@ for origem, destino, custo in distancias_cidades:
     grafo[destino].append((origem, custo))
 
 def calc_heuristica(cidade, meta, coords):
-
     x1, y1 = coords[cidade]
     x2, y2 = coords[meta]
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
-
-
 #----------------------------------
-## Basicamente AQUI ESTÁ A IMPLEMENTAÇÃO DO ALGORITMO A*
-#A* é um algoritmo de busca que utiliza uma heurística para guiar a busca
-# O algoritmo A* combina a busca de custo uniforme com a busca informada
+# Implementação do algoritmo A*
 def astar(grafo, inicio, meta, coords):
-
     open_set = []
     h_inicial = calc_heuristica(inicio, meta, coords)
     heapq.heappush(open_set, (h_inicial, inicio, 0))
     
-    came_from = {}  # Para reconstrução do caminho
-    g_score = {inicio: 0}  # Custo conhecido para cada cidade
+    came_from = {}   # Para reconstruir o caminho
+    g_score = {inicio: 0}  # Custo real acumulado até cada cidade
 
     print(f"Inicializando A* com nó de partida: {inicio}")
     
@@ -71,7 +67,7 @@ def astar(grafo, inicio, meta, coords):
             print("\nMeta alcançada!")
             return caminho, g_score[meta]
         
-        # Explora os vizinhos do nó atual
+        # Explora os vizinhos
         for vizinho, custo in grafo.get(atual, []):
             novo_g = g_atual + custo
             h_vizinho = calc_heuristica(vizinho, meta, coords)
@@ -82,11 +78,10 @@ def astar(grafo, inicio, meta, coords):
                 heapq.heappush(open_set, (f_vizinho, vizinho, novo_g))
                 came_from[vizinho] = atual
     return None, float('inf')
-
 #----------------------------------
 
-inicio = "Vitória"
-meta = "SJ Preto"  # Altere a cidade meta conforme necessário
+inicio = "São Paulo"  
+meta = "Belo Horizonte"  
 
 caminho, custo_total = astar(grafo, inicio, meta, coordenadas)
 
@@ -95,3 +90,31 @@ if caminho:
     print("Custo Final:", custo_total)
 else:
     print(f"Não foi encontrado um caminho de {inicio} até {meta}.")
+
+
+#print("\nPosições no Plano Cartesiano:")
+#for cidade, pos in coordenadas.items():
+#    print(f"{cidade}: {pos}")
+
+plt.figure(figsize=(8, 6))
+
+for cidade, (x, y) in coordenadas.items():
+    plt.plot(x, y, 'bo')  
+    plt.text(x + 2, y + 2, cidade, fontsize=9)
+
+# Plota as arestas. Para evitar desenhar a mesma aresta duas vezes, percorremos a lista de distancias_cidades.
+desenhadas = set()
+for origem, destino, custo in distancias_cidades:
+    chave = tuple(sorted((origem, destino)))
+    if chave in desenhadas:
+        continue
+    desenhadas.add(chave)
+    x1, y1 = coordenadas[origem]
+    x2, y2 = coordenadas[destino]
+    plt.plot([x1, x2], [y1, y2], 'k-', lw=1)
+
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Grafo no Plano Cartesiano")
+plt.grid(False)
+plt.show()

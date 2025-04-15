@@ -94,4 +94,4 @@ grafo.adicionar_aresta('CNCDOSC', 'OPO I ISCMPA', 430)
 # print("Custo total:", custo)
 
 # Desenha o mapa com o grafo e, opcionalmente, um caminho destacado
-#grafo.desenhar_mapa()
+grafo.desenhar_mapa()
