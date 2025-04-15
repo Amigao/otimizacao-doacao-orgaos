@@ -20,7 +20,7 @@ def carregar_hospitais(nome_arquivo):
         for linha in arquivo:
             if linha.strip():  # Ignora linhas vazias
                 # Usa regex para capturar os dados corretamente
-                match = re.match(r"([A-Z]{2}) - (.*?):\s*“(.*?)”\s*- CEP:\s*([\d.-]+)", linha.strip())
+                match = re.match(r"([A-Z]{2}) - (.*?):\s*'(.*?)'\s*- CEP:\s*([\d.-]+)", linha.strip())
                 if match:
                     estado, cidade, nome_hospital, cep = match.groups()
 
@@ -47,6 +47,8 @@ def carregar_coordenadas(arq):
     return coords
 
 # Exemplo de uso
+
 #hospitais = carregar_hospitais("hospitais.txt")
+
 #for hospital in hospitais:
-  #  print(hospital)
+ #   print(hospital)

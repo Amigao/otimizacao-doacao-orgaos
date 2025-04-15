@@ -1,34 +1,6 @@
-AC - Rio Branco: “Hospital das Clínicas” - CEP: 69908650
-AL - Maceió: “OPO HGE” - CEP: 57010001
-AM - Manaus: “Fundação Hospital Adriano Jorge” - CEP: 69065001
-AM - Manaus: “OPO AM” - CEP: 69082230
-BA - Salvador: “OPO HGRS” - CEP: 41810012
-BA - Feira de Santana: “OPO - Feira de Santana” - CEP: 44094000
-CE - Fortaleza: “OPO - HGF” - CEP: 60175205
-CE - Juazeiro do Norte: “OPO - Cariri” - CEP: 63050060
-DF - Brasília: “SHMS Área Especial A” - CEP: 70335900
-ES - Vitória: “CNCDO” - CEP: 29050720
-GO - Goiânia: “CRER” - CEP: 74653230
-MA - São Luís: “Hospital Materno Infantil” - CEP: 65020290
-MG - Belo Horizonte: “Hospital João XXIII” - CEP: 30130100
-MG - Uberlândia: “CNCDO Oeste - Uberlândia” - CEP: 38400204
-MS - Campo Grande: “CET-MS” - CEP: 79002072
-PA - Belém: “CETEA” - CEP: 66095200
-PB - João Pessoa: “Instituto de Previdência de Estado da Paraíba” - CEP: 58030020 
-PE - Recife: “Real Hospital Português de Beneficência em Pernambuco” - CEP: 52010902
-PE - Petrolina: “Hospital Dom Malam” - CEP: 56302140
-PI - Teresina: “Hospital Getúlio Vargas” - CEP: 64001430
-PR - Londrina: “COPOTT - Londrina” - CEP: 86010420
-PR - Maringá: “COPOTT - Maringá” - CEP: 87030090
-RJ - Rio de Janeiro: “OPO RJ 1 - OPO SUL” - CEP: 20211030
-RJ - Barra Mansa: “OPO RJ 5 - OPO Barra Mansa” - CEP: 27310420
-RN - Natal: “OPO RN” - CEP: 59015380
-RO - Porto Velho: “HB - Dr. Ary Pinheiro” - CEP: 76821092
-RR - Boa Vista: “CET - RO” - CEP: 69305455
-RS - Porto Alegre: “OPO I ISCMPA” - CEP: 90020090
-SC - Florianópolis: “CNCDOSC” - CEP: 88015530
-SP - São Paulo: “OPO / HC” - CEP: 05403000
-SP - São José do Rio Preto: “OPO / São José do Rio Preto” - CEP: 15090000
-SP - Ribeirão Preto: “OPO / Ribeirão Preto” - CEP: 15090000
-SE - Aracaju: “Hospital João Alves Filho” - CEP: 49080470
-TO - Palmas: “Hospital João Alves Filho” - CEP: 77015205
+SP - São Paulo: 'Instituto do Coração – HC-FMUSP' - CEP: 05403000
+SP - Presidente Prudente: 'Hospital Presidente Prudente' - CEP: 19050920
+SP - Campinas: 'HC da Unicamp – Campinas' - CEP: 13083888
+SP - São José do Rio Preto: 'Hospital de Base de São José do Rio Preto' - CEP: 15090000
+SP - Sorocaba: 'Hospital Oftalmológico de Sorocaba' - CEP: 18031060
+SP - Ribeirão Preto: 'HC Ribeirão Preto – USP' - CEP: 14048900

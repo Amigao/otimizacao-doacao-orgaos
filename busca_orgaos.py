@@ -4,14 +4,7 @@ import requests
 from collections import deque
 from math import radians, sin, cos, sqrt, atan2
 from cep2coord import *
-
-#Funções novas adicionadas e ainda verificaar:
-# obter_coordenadas(), calcular_distancia(), encontrar_hospital_mais_proximo()
-# O resto ta igual, apenas criei essas para realizar a busca, basicamente a minha ideia
-# é que o paciente informe o cep dele e a partir disso eu busco o hospital mais próximo, tambem
-#se baseando no CEP. Ainda precisa ponderar outras coisas como a quantidade de órgãos disponíveis
-#
-#
+from calc_distancia_entre_2_coord import *
 
 class Demanda:
     def __init__(self, pacientes_aguardando=None, fila_prioridade=None):
@@ -20,22 +13,6 @@ class Demanda:
 
     def __repr__(self):
         return (f"Pacientes aguardando: {self.pacientes_aguardando}")
-
-# Função para calcular a distância entre duas coordenadas geográficas usando a fórmula de Haversine
-def calcular_distancia(lat1, lon1, lat2, lon2):
-    # Converter de graus para radianos
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    
-    # Fórmula de Haversine
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    
-    # Raio da Terra em km
-    R = 6371.0
-    
-    return R * c
 
 
 # Função para encontrar o hospital mais próximo ao órgão ofertado

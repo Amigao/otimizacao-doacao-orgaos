@@ -8,7 +8,7 @@ def limpar_cep(cep):
     return ''.join(filter(str.isdigit, cep))
 
 def get_coordinates_from_cep(cep):
-    time.sleep(0.8)  # Para não estourar o limite da API
+    time.sleep(0.6)  # Para não estourar o limite da API
     
     cep = limpar_cep(cep)
 
@@ -42,7 +42,6 @@ ceps = []
 hospitais = carregar_hospitais("hospitais.txt")
 for hospital in hospitais:
     ceps.append(hospital.cep)
-
 
 
 # Coletar todas as coordenadas
