@@ -6,66 +6,11 @@ estaremos simplificando para o trabalho nao ficar extremamente complexo.
 
 
 
--Muita coisa feita, o certo é eu fazer esse grafo na mão mesmo... colocando as conexoes entre as cidades
-e colocando suas coordenadas. Enfim falta só isso... trabalho de corno
+Para a interface:
+    
+Eu preciso que a interface em seu backend chame a busca_Astar.py, tambem preciso que ela pegue os orgaos que existem
+que está no arquivo mock_orgaos e também que esses orgaos estão associados a um hospital de acordo com seu CEP
+entretanto como utilizamos somente os hospitais da regiao sudeste, somente eles vao ser considerados...Tambem quero que a interface utilize o grafo gerado na busca_Astar
+só que pintando de vermelho o caminho feito... para que fique mais intuitivo na hora da apresentação
 
 
-
-import networkx as nx
-import heapq
-
-# Criar o grafo
-G = nx.Graph()
-
-edges = [
-    ("SJ Preto", "Ribeirão Preto", 168),
-    ("Ribeirão Preto", "São Paulo", 291),
-    ("São Paulo", "SJ Preto", 416),
-    ("São Paulo", "BarraMansa", 279),
-    ("BarraMansa", "Rio de Janeiro", 79),
-    ("Rio de Janeiro", "Vitória", 517)
-]
-
-G.add_weighted_edges_from(edges)
-
-# Heurística (distância em linha reta até Vitória)
-heuristica = {
-    "SJ Preto": 990,
-    "Ribeirão Preto": 822,
-    "São Paulo": 730,
-    "BarraMansa": 627,
-    "Rio de Janeiro": 521,
-    "Vitória": 0
-}
-
-def a_star_search(graph, start, goal, heuristic):
-    # Fila de prioridade: (f(n), g(n), cidade atual, caminho)
-    fila = [(heuristic[start], 0, start, [start])]
-    visitados = {}
-
-    while fila:
-        f, g, atual, caminho = heapq.heappop(fila)
-
-        # Se chegamos ao destino, retornamos o caminho e os custos
-        if atual == goal:
-            return caminho, g, f
-
-        # Se já visitamos essa cidade com custo menor, ignoramos
-        if atual in visitados and visitados[atual] <= g:
-            continue
-        visitados[atual] = g
-
-        for vizinho in graph.neighbors(atual):
-            custo_g = g + graph[atual][vizinho]['weight']
-            custo_f = custo_g + heuristic[vizinho]
-            heapq.heappush(fila, (custo_f, custo_g, vizinho, caminho + [vizinho]))
-
-    return None, float("inf"), float("inf")
-
-# Executar busca A*
-caminho, distancia_total, custo_estimado = a_star_search(G, "SJ Preto", "Vitória", heuristica)
-
-# Exibir resultados
-print("Caminho (A*):", " -> ".join(caminho))
-print("Distância total real g(n) (km):", distancia_total)
-print("Custo estimado final f(n) = g(n) + h(n):", custo_estimado)

@@ -4,25 +4,25 @@ import matplotlib.pyplot as plt
 
 # Dados das arestas entre cidades (g(n))
 distancias_cidades = [
-    ("SJ Preto", "Ribeirão Preto", 168),
+    ("São José do Rio Preto", "Ribeirão Preto", 168),
     ("Ribeirão Preto", "São Paulo", 291),
-    ("São Paulo", "SJ Preto", 416),
+    ("São Paulo", "São José do Rio Preto", 416),
     ("São Paulo", "BarraMansa", 279),
     ("BarraMansa", "Rio de Janeiro", 79),
     ("Rio de Janeiro", "Vitória", 517),
-    ("SJ Preto", "Uberlandia", 318),
-    ("Uberlandia", "Belo Horizonte", 240),
+    ("São José do Rio Preto", "Uberlândia", 318),
+    ("Uberlândia", "Belo Horizonte", 240),
 ]
 
-# Atualize o dicionário de coordenadas para incluir também Uberlandia e Belo Horizonte
+# Atualize o dicionário de coordenadas para incluir também Uberlândia e Belo Horizonte
 coordenadas = {
-    "SJ Preto": (64,95),
+    "São José do Rio Preto": (64,95),
     "Ribeirão Preto": (150, 80),
     "São Paulo": (200, 50),
     "BarraMansa": (300, 20),
     "Rio de Janeiro": (400, 100),
     "Vitória": (500, 150),
-    "Uberlandia": (179, 130),      
+    "Uberlândia": (179, 130),      
     "Belo Horizonte": (300, 120)     
 }
 
