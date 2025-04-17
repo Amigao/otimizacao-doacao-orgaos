@@ -1,6 +1,0 @@
-SP - São Paulo: 'Instituto do Coração – HC-FMUSP' - CEP: 05403000
-SP - Presidente Prudente: 'Hospital Presidente Prudente' - CEP: 19050920
-SP - Campinas: 'HC da Unicamp – Campinas' - CEP: 13083888
-SP - São José do Rio Preto: 'Hospital de Base de São José do Rio Preto' - CEP: 15090000
-SP - Sorocaba: 'Hospital Oftalmológico de Sorocaba' - CEP: 18031060
-SP - Ribeirão Preto: 'HC Ribeirão Preto – USP' - CEP: 14048900
