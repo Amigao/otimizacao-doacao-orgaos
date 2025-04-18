@@ -33,7 +33,6 @@ def A_estrela(grafo, cidade_inicial, cidade_meta):
                 atual = came_from[atual]
             caminho.append(cidade_inicial)
             caminho.reverse()
-            print("\nMeta alcançada!")
             return caminho, g_score[cidade_meta]
         
         # Explora os vizinhos
