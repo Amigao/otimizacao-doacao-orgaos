@@ -19,6 +19,7 @@ from dados.cidades import distancias_cidades, coordenadas, grafo_distancias
 # from funcoes.Hospital import vincular_orgaos
 from funcoes.Hospital import carregar_hospitais
 from funcoes.Orgao import carregar_orgaos
+from funcoes.Compatibilidade import calcular_tempo_compatibilidade
 
 # Desenha o grafo e destaca o caminho
 def desenhar_grafo(ax, coords, arestas, caminho=None):
@@ -82,12 +83,14 @@ def realizar_busca():
     melhor_caminho = None
     menor_custo = float("inf")
     menor_tempo = float("inf")
+    transporte_especial = False
     tempos_de_execucao = {}
     custos_dos_caminhos = {}
-
     for orgao, hosp in orgaos_com_hospital:
         destino = hosp.cidade
         print(f"\n  -> Buscando rotas até hospital: {hosp.nome} ({destino})")
+        
+        encontrou_caminho_viavel = False  # flag local
 
         for funcao_algoritmo in ALGORITMOS:
             nome_algoritmo = funcao_algoritmo.__name__
@@ -100,23 +103,45 @@ def realizar_busca():
                 print(f"    [X] {nome_algoritmo}: Caminho não encontrado.")
                 continue
 
-            print(f"    [✓] {nome_algoritmo}:")
-            print(f"        Caminho: {' -> '.join(caminho)}")
-            print(f"        Custo: {custo:.1f} km | Tempo de busca: {tempo_de_busca:.6f} s")
+            if calcular_tempo_compatibilidade(orgao, custo):
+                encontrou_caminho_viavel = True
 
-            # Atualiza se este for o melhor custo
-            if custo < menor_custo:
+                print(f"    [✓] {nome_algoritmo}:")
+                print(f"        Caminho: {' -> '.join(caminho)}")
+                print(f"        Custo: {custo:.1f} km | Tempo de busca: {tempo_de_busca:.6f} s")
+
+                if custo < menor_custo:
+                    melhor_hospital = hosp
+                    melhor_algoritmo = nome_algoritmo
+                    melhor_caminho = caminho
+                    menor_custo = custo
+                    menor_tempo = tempo_de_busca
+
+                tempos_de_execucao[nome_algoritmo] = min(
+                    tempos_de_execucao.get(nome_algoritmo, float('inf')),
+                    tempo_de_busca
+                )
+                custos_dos_caminhos[nome_algoritmo] = min(
+                    custos_dos_caminhos.get(nome_algoritmo, float('inf')),
+                    custo
+                )
+            else:
                 melhor_hospital = hosp
-                melhor_algoritmo = nome_algoritmo
-                melhor_caminho = caminho
-                menor_custo = custo
-                menor_tempo = tempo_de_busca
+                print(f"    [X] {nome_algoritmo}: Órgão encontrado mas incompatível -> Tempo de viagem maior que tempo de isquemia.")
 
-            # Guarda tempos mínimos para cada algoritmo
-            tempos_de_execucao[nome_algoritmo] = min(tempos_de_execucao.get(nome_algoritmo, float('inf')), tempo_de_busca)
-            custos_dos_caminhos[nome_algoritmo] = min(custos_dos_caminhos.get(nome_algoritmo, float('inf')), custo)
+        if not encontrou_caminho_viavel:
+            transporte_especial = True
 
-    if not melhor_caminho:
+
+    if transporte_especial:
+        print(f"\n[!] Transporte especial necessário para o órgão {orgao.nome}.")
+        messagebox.showwarning(
+            "Atenção",
+            f"Transporte especial necessário para o órgão {orgao.nome}.\n\n"
+            f"Existe um {orgao.nome} disponível em {melhor_hospital}.\n"
+            f"Entretanto, será preciso utilizar transporte especial para chegar em no máximo {orgao.tempo_isquemia} horas."
+        )
+    elif not melhor_caminho:
         print(f"[!] Nenhum caminho encontrado para o órgão {orgao.nome}.")
         messagebox.showerror("Erro", f"Nenhum caminho encontrado para o órgão {orgao.nome}.")
     else:
