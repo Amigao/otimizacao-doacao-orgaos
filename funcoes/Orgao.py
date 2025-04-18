@@ -12,7 +12,7 @@ class Orgao:
         self.tempo_isquemia = tempo_isquemia
 
     def __repr__(self):
-        return f"Órgão: {self.nome} \nData de captação: {self.data_captação.strftime('%d/%m/%Y')}) \nTempo de isquemia: {self.tempo_isquemia} horas"
+        return f"Órgão: {self.nome} \nData de captação: {self.data_captação.strftime('%d/%m/%Y')} \nTempo de isquemia: {self.tempo_isquemia} horas \n"
     
     def tempo_captação(self):
         # Calcula o tempo decorrido desde a captação até o momento atual
@@ -32,3 +32,10 @@ def carregar_orgaos(nome_arquivo):
                     orgaos.append(orgao)
 
     return orgaos
+
+# Exemplo de uso - rodável usando [python funcoes/Orgao.py]
+if __name__ == "__main__":
+    orgaos = carregar_orgaos("dados/orgaos.txt")
+
+    for orgao in orgaos:
+        print(orgao)
