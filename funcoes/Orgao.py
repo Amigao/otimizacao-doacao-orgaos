@@ -1,5 +1,7 @@
 from datetime import datetime
 
+VELOCIDADE_MEDIA = 80  # Velocidade média de transporte (km/h)
+
 class Orgao:
     def __init__(self, nome, data_captação, cep, tempo_isquemia):
         self.nome = nome
@@ -17,6 +19,9 @@ class Orgao:
     def tempo_captação(self):
         # Calcula o tempo decorrido desde a captação até o momento atual
         return (datetime.now() - self.data_captação).days
+
+def calcular_tempo_compatibilidade(orgao, distancia):
+    return (float(distancia) / VELOCIDADE_MEDIA) <= float(orgao.tempo_isquemia)
 
 def carregar_orgaos(nome_arquivo):
 

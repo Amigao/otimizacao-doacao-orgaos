@@ -16,10 +16,8 @@ from time import time
 from dados.cidades import distancias_cidades, coordenadas, grafo_distancias
 
 # Funções das classes Hospital e Orgao
-# from funcoes.Hospital import vincular_orgaos
 from funcoes.Hospital import carregar_hospitais
-from funcoes.Orgao import carregar_orgaos
-from funcoes.Compatibilidade import calcular_tempo_compatibilidade
+from funcoes.Orgao import carregar_orgaos, vincular_orgaos
 
 # Desenha o grafo e destaca o caminho
 def desenhar_grafo(ax, coords, arestas, caminho=None):
