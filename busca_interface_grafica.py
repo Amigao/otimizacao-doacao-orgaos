@@ -16,8 +16,9 @@ from time import time
 from dados.cidades import distancias_cidades, coordenadas, grafo_distancias
 
 # Funções das classes Hospital e Orgao
-from funcoes.Hospital import carregar_hospitais
+from funcoes.Hospital import carregar_hospitais, cidade_via_cep
 from funcoes.Orgao import carregar_orgaos, calcular_tempo_compatibilidade
+from funcoes.Paciente import carregar_pacientes
 
 # Desenha o grafo e destaca o caminho
 def desenhar_grafo(ax, coords, arestas, caminho=None):
@@ -45,7 +46,7 @@ def desenhar_grafo(ax, coords, arestas, caminho=None):
     ax.set_title("Rota"); ax.grid(True)
 
 # Função do botão
-def realizar_busca():
+def realizar_busca_interface():
     nome = entry_nome.get().strip()
     origem = var_cidade.get()
     orgao = var_orgao.get()
@@ -58,6 +59,9 @@ def realizar_busca():
     # Pega o nome do órgão escolhido no menu (ex: "Coração")
     nome_orgao = var_orgao.get()
 
+    realizar_busca(nome, origem, nome_orgao)
+    
+def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
     # Filtra todos os órgãos disponíveis desse tipo
     orgaos_disponiveis = [o for o in orgaos if o.nome == nome_orgao]
 
@@ -84,6 +88,7 @@ def realizar_busca():
     transporte_especial = False
     tempos_de_execucao = {}
     custos_dos_caminhos = {}
+    orgao_final = None
     for orgao, hosp in orgaos_com_hospital:
         destino = hosp.cidade
         print(f"\n  -> Buscando rotas até hospital: {hosp.nome} ({destino})")
@@ -94,7 +99,7 @@ def realizar_busca():
             nome_algoritmo = funcao_algoritmo.__name__
             tempo_pre_busca = time()
 
-            caminho, custo = funcao_algoritmo(grafo_distancias, origem, destino)
+            caminho, custo = funcao_algoritmo(grafo_distancias, cidade_origem, destino)
             tempo_de_busca = time() - tempo_pre_busca
 
             if not caminho:
@@ -114,6 +119,7 @@ def realizar_busca():
                     melhor_caminho = caminho
                     menor_custo = custo
                     menor_tempo = tempo_de_busca
+                    orgao_final = orgao
 
                 tempos_de_execucao[nome_algoritmo] = min(
                     tempos_de_execucao.get(nome_algoritmo, float('inf')),
@@ -130,20 +136,23 @@ def realizar_busca():
         if not encontrou_caminho_viavel:
             transporte_especial = True
 
-
     if transporte_especial:
         print(f"\n[!] Transporte especial necessário para o órgão {orgao.nome}.")
         messagebox.showwarning(
             "Atenção",
-            f"Transporte especial necessário para o órgão {orgao.nome}.\n\n"
+            f"Transporte especial necessário para o paciente {paciente.nome}.\n\n"
             f"Existe um {orgao.nome} disponível em {melhor_hospital}.\n"
             f"Entretanto, será preciso utilizar transporte especial para chegar em no máximo {orgao.tempo_isquemia} horas."
         )
+        return False
+        # TODO: pegar input da interface questionando se o transporte especial será utilizado ou o paciente permanecerá na fila de espera
     elif not melhor_caminho:
         print(f"[!] Nenhum caminho encontrado para o órgão {orgao.nome}.")
         messagebox.showerror("Erro", f"Nenhum caminho encontrado para o órgão {orgao.nome}.")
+        return False
     else:
         print(f"\n>>> Melhor resultado para {orgao.nome}:")
+        print(f"    Paciente: {paciente.nome}")
         print(f"    Hospital escolhido: {melhor_hospital.nome} ({melhor_hospital.cidade})")
         print(f"    Algoritmo escolhido: {melhor_algoritmo}")
         print(f"    Custo total: {menor_custo:.1f} km")
@@ -151,7 +160,8 @@ def realizar_busca():
 
         messagebox.showinfo(
             f"Melhor Resultado - {melhor_algoritmo}",
-            f"Órgão: {orgao.nome} ({orgao.cep})\n"
+            f"Nome do paciente: {paciente.nome}\n"
+            f"Órgão: {orgao.nome}\n"
             f"Hospital: {melhor_hospital.nome} ({melhor_hospital.cidade})\n"
             f"Algoritmo: {melhor_algoritmo}\n"
             f"Caminho: {' -> '.join(melhor_caminho)}\n"
@@ -161,33 +171,21 @@ def realizar_busca():
 
         desenhar_grafo(ax, coordenadas, distancias_cidades, caminho=melhor_caminho)
         canvas.draw()
+        if(orgao_final != None):
+            orgaos.remove(orgao_final)
+        return True
 
 # Carrega dados
 hospitais = carregar_hospitais("dados/hospitais.txt")
 orgaos = carregar_orgaos("dados/mock_orgaos.txt")
+pacientes = carregar_pacientes("dados/mock_pacientes.txt")
 
-if not hospitais or not orgaos:
+if not hospitais or not orgaos or not pacientes:
     raise RuntimeError("Falha ao carregar dados.")
-
-# for orgao in orgaos:
-#     for hospital in hospitais:
-#         if orgao.cep == hospital.cep:
-#             vincular_orgaos(orgao, hospital)
 
 # Configura GUI
 root = tk.Tk()
 root.title("Busca de Rotas por Órgão")
-
-# Permitir quebra com Ctrl+C
-import signal
-import sys
-
-def handler_sigint(sig, frame):
-    print("\n[!] Encerrando o programa com Ctrl+C.")
-    root.destroy()
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, handler_sigint)
 
 tk.Label(root, text="Nome do Paciente:").pack(padx=5, pady=2)
 entry_nome = tk.Entry(root); entry_nome.pack(fill='x', padx=5)
@@ -210,12 +208,18 @@ tk.OptionMenu(root, var_orgao, *nomes_unicos).pack(fill='x', padx=5)
 # opt_algoritmo = tk.OptionMenu(root, var_algoritmo, *(alg.__name__ for alg in ALGORITMOS))
 # opt_algoritmo.pack(fill='x', padx=5)
 
-btn = tk.Button(root, text="Realizar Busca", command=realizar_busca)
+btn = tk.Button(root, text="Realizar Busca", command=realizar_busca_interface)
 btn.pack(pady=8)
 
 # Matplotlib no Tk
 fig, ax = plt.subplots(figsize=(6, 4))
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().pack(fill='both', expand=True, padx=5, pady=5)
+
+for paciente in pacientes:
+    if (realizar_busca(paciente.nome, cidade_via_cep(hospitais, paciente.cep), paciente.orgao_solicitado)):
+        pacientes.remove(paciente)
+        print(f"Paciente {paciente.nome} removido da lista de espera.")
+        print(f"Órgão {paciente.orgao_solicitado} encontrado para o paciente {paciente.nome}.\n")
 
 root.mainloop()
