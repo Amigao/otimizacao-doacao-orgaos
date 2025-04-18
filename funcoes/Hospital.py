@@ -1,11 +1,9 @@
 class Hospital:
-    def __init__(self, estado, cidade, nome, cep, orgaos_disponiveis=None):
+    def __init__(self, estado, cidade, nome, cep):
         self.estado = estado
         self.cidade = cidade
         self.nome = nome
         self.cep = cep  
-        self.orgaos_disponiveis = orgaos_disponiveis or []
-
 
     def __repr__(self):
         return f"{self.nome}, ({self.cidade}-{self.estado}, {self.cep})" 
