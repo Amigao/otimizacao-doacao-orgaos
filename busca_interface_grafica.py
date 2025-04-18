@@ -16,6 +16,7 @@ from time import time
 from dados.cidades import distancias_cidades, coordenadas, grafo_distancias
 
 # Funções das classes Hospital e Orgao
+# from funcoes.Hospital import vincular_orgaos
 from funcoes.Hospital import carregar_hospitais
 from funcoes.Orgao import carregar_orgaos
 
@@ -49,78 +50,94 @@ def realizar_busca():
     nome = entry_nome.get().strip()
     origem = var_cidade.get()
     orgao = var_orgao.get()
+    orgao = [o for o in orgaos if o.nome == orgao]
 
     if not nome or not origem or not orgao:
         messagebox.showerror("Erro", "Preencha todos os campos.")
         return
 
-    orgao_escolhido = next((o for o in orgaos if o.nome == orgao), None)
-    if not orgao_escolhido:
-        messagebox.showerror("Erro", "Órgão não cadastrado.")
+    # Pega o nome do órgão escolhido no menu (ex: "Coração")
+    nome_orgao = var_orgao.get()
+
+    # Filtra todos os órgãos disponíveis desse tipo
+    orgaos_disponiveis = [o for o in orgaos if o.nome == nome_orgao]
+
+    if not orgaos_disponiveis:
+        messagebox.showerror("Erro", f"Não há órgãos cadastrados do tipo {nome_orgao}.")
         return
 
-    cep_org = orgao_escolhido.cep
+    # Associa cada órgão a seu hospital, via CEP
+    orgaos_com_hospital = []
+    for orgao in orgaos_disponiveis:
+        hosp = next((h for h in hospitais if h.cep == orgao.cep), None)
+        if hosp:
+            orgaos_com_hospital.append((orgao, hosp))
 
-    # encontra cidade do hospital com mesmo CEP
-    hosp = next((h for h in hospitais if h.cep == cep_org), None)
-    if not hosp:
-        messagebox.showerror("Erro", "Hospital não encontrado para esse órgão.")
+    if not orgaos_com_hospital:
+        messagebox.showerror("Erro", "Nenhum hospital encontrado para os órgãos disponíveis.")
         return
 
-    destino = hosp.cidade
-
+    melhor_hospital = None
+    melhor_algoritmo = None
+    melhor_caminho = None
+    menor_custo = float("inf")
+    menor_tempo = float("inf")
     tempos_de_execucao = {}
     custos_dos_caminhos = {}
 
-    # busca com todos os algoritmos para que se possa comparar os tempos
-    for funcao_algoritmo in ALGORITMOS:
-        nome_algoritmo = funcao_algoritmo.__name__
-        tempo_pre_busca = time()
-        
-        caminho, custo = funcao_algoritmo(grafo_distancias, origem, destino)
-        
-        tempo_de_busca = time() - tempo_pre_busca
-        tempos_de_execucao[nome_algoritmo] = tempo_de_busca
-        custos_dos_caminhos[nome_algoritmo] = custo
+    for orgao, hosp in orgaos_com_hospital:
+        destino = hosp.cidade
+        print(f"\n  -> Buscando rotas até hospital: {hosp.nome} ({destino})")
 
-        if not caminho:
-            messagebox.showerror("Erro", f"Caminho não encontrado com o algoritmo: {nome_algoritmo}")
-            continue
+        for funcao_algoritmo in ALGORITMOS:
+            nome_algoritmo = funcao_algoritmo.__name__
+            tempo_pre_busca = time()
+
+            caminho, custo = funcao_algoritmo(grafo_distancias, origem, destino)
+            tempo_de_busca = time() - tempo_pre_busca
+
+            if not caminho:
+                print(f"    [X] {nome_algoritmo}: Caminho não encontrado.")
+                continue
+
+            print(f"    [✓] {nome_algoritmo}:")
+            print(f"        Caminho: {' -> '.join(caminho)}")
+            print(f"        Custo: {custo:.1f} km | Tempo de busca: {tempo_de_busca:.6f} s")
+
+            # Atualiza se este for o melhor custo
+            if custo < menor_custo:
+                melhor_hospital = hosp
+                melhor_algoritmo = nome_algoritmo
+                melhor_caminho = caminho
+                menor_custo = custo
+                menor_tempo = tempo_de_busca
+
+            # Guarda tempos mínimos para cada algoritmo
+            tempos_de_execucao[nome_algoritmo] = min(tempos_de_execucao.get(nome_algoritmo, float('inf')), tempo_de_busca)
+            custos_dos_caminhos[nome_algoritmo] = min(custos_dos_caminhos.get(nome_algoritmo, float('inf')), custo)
+
+    if not melhor_caminho:
+        print(f"[!] Nenhum caminho encontrado para o órgão {orgao.nome}.")
+        messagebox.showerror("Erro", f"Nenhum caminho encontrado para o órgão {orgao.nome}.")
+    else:
+        print(f"\n>>> Melhor resultado para {orgao.nome}:")
+        print(f"    Hospital escolhido: {melhor_hospital.nome} ({melhor_hospital.cidade})")
+        print(f"    Algoritmo escolhido: {melhor_algoritmo}")
+        print(f"    Custo total: {menor_custo:.1f} km")
+        print(f"    Tempo de busca: {menor_tempo:.6f} s")
 
         messagebox.showinfo(
-            f"Resultado - {nome_algoritmo}",
-            f"Algoritmo: {nome_algoritmo}\n"
-            f"Caminho: {' -> '.join(caminho)}\n"
-            f"Custo total = {custo:.1f} km\n"
-            f"Tempo de Busca = {tempo_de_busca:.6f} s"
+            f"Melhor Resultado - {melhor_algoritmo}",
+            f"Órgão: {orgao.nome} ({orgao.cep})\n"
+            f"Hospital: {melhor_hospital.nome} ({melhor_hospital.cidade})\n"
+            f"Algoritmo: {melhor_algoritmo}\n"
+            f"Caminho: {' -> '.join(melhor_caminho)}\n"
+            f"Custo total = {menor_custo:.1f} km\n"
+            f"Tempo de Busca = {menor_tempo:.6f} s"
         )
 
-        desenhar_grafo(ax, coordenadas, distancias_cidades, caminho)
+        desenhar_grafo(ax, coordenadas, distancias_cidades, caminho=melhor_caminho)
         canvas.draw()
-
-    # Comparação dos tempos
-    comparação_resultados = "Comparação de tempos:\n"
-    melhor_tempo = min(tempos_de_execucao, key=tempos_de_execucao.get)
-    
-    for nome, tempo in tempos_de_execucao.items():
-        comparação_resultados += f"{nome}: {tempo:.6f} s\n"
-
-    mensagem_custo = "Comparação de custo:\n"
-    if all(custo == list(custos_dos_caminhos.values())[0] for custo in custos_dos_caminhos.values()):
-        mensagem_custo += "Todos os algoritmos possuem o mesmo custo.\n"
-    else:
-        melhor_custo = min(custos_dos_caminhos, key=custos_dos_caminhos.get)
-        for nome, custo in custos_dos_caminhos.items():
-            mensagem_custo += f"{nome}: {custo:.1f} km\n"
-        mensagem_custo += f"\nAlgoritmo com caminho mais barato: {melhor_custo}\n"
-
-    comparação_resultados += mensagem_custo
-
-    comparação_resultados += f"\nAlgoritmo mais rápido: {melhor_tempo}"
-    comparação_resultados += f"\nAlgoritmo com caminho mais barato: {melhor_custo}"
-
-    messagebox.showinfo("Comparação de Tempos", comparação_resultados)
-
 
 # Carrega dados
 hospitais = carregar_hospitais("dados/hospitais.txt")
@@ -129,9 +146,25 @@ orgaos = carregar_orgaos("dados/mock_orgaos.txt")
 if not hospitais or not orgaos:
     raise RuntimeError("Falha ao carregar dados.")
 
+# for orgao in orgaos:
+#     for hospital in hospitais:
+#         if orgao.cep == hospital.cep:
+#             vincular_orgaos(orgao, hospital)
+
 # Configura GUI
 root = tk.Tk()
 root.title("Busca de Rotas por Órgão")
+
+# Permitir quebra com Ctrl+C
+import signal
+import sys
+
+def handler_sigint(sig, frame):
+    print("\n[!] Encerrando o programa com Ctrl+C.")
+    root.destroy()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, handler_sigint)
 
 tk.Label(root, text="Nome do Paciente:").pack(padx=5, pady=2)
 entry_nome = tk.Entry(root); entry_nome.pack(fill='x', padx=5)
@@ -143,10 +176,10 @@ opt_cidade = tk.OptionMenu(root, var_cidade, *(h.cidade for h in hospitais))
 opt_cidade.pack(fill='x', padx=5)
 
 tk.Label(root, text="Órgão Necessário:").pack(padx=5, pady=2)
+nomes_unicos = list({o.nome for o in orgaos})
 var_orgao = tk.StringVar(root)
-var_orgao.set(orgaos[0].nome)
-opt_orgao = tk.OptionMenu(root, var_orgao, *(o.nome for o in orgaos))
-opt_orgao.pack(fill='x', padx=5)
+var_orgao.set(nomes_unicos[0])
+tk.OptionMenu(root, var_orgao, *nomes_unicos).pack(fill='x', padx=5)
 
 # tk.Label(root, text="Algorítmo de Busca:").pack(padx=5, pady=2)
 # var_algoritmo = tk.StringVar(root)
