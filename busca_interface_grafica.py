@@ -1,8 +1,9 @@
 # Importa os algoritmos
 from algoritmos.A_estrela import A_estrela
+from algoritmos.largura import busca_em_largura
 # ADICIONAR IMPORTS DE ALGORITMOS AQUI!
 
-ALGORITMOS = [A_estrela]
+ALGORITMOS = [A_estrela, busca_em_largura]
 
 
 import tkinter as tk
