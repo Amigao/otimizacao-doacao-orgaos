@@ -49,7 +49,6 @@ def realizar_busca():
     nome = entry_nome.get().strip()
     origem = var_cidade.get()
     orgao = var_orgao.get()
-    algoritmo_escolhido = var_algoritmo.get()
 
     if not nome or not origem or not orgao:
         messagebox.showerror("Erro", "Preencha todos os campos.")
@@ -70,22 +69,58 @@ def realizar_busca():
 
     destino = hosp.cidade
 
-    # BUSCA PELO MELHOR CAMINHO COM O ALGORITMO ESCOLHIDO
-    funcao_algoritmo = [f_alg for f_alg in ALGORITMOS if f_alg.__name__ == algoritmo_escolhido][0]
-    tempo_pre_busca = time()
-    caminho, custo = funcao_algoritmo(grafo_distancias, origem, destino)
-    tempo_de_busca = time() - tempo_pre_busca
+    tempos_de_execucao = {}
+    custos_dos_caminhos = {}
 
-    if not caminho:
-        messagebox.showerror("Erro", "Caminho não encontrado.")
-        return
+    # busca com todos os algoritmos para que se possa comparar os tempos
+    for funcao_algoritmo in ALGORITMOS:
+        nome_algoritmo = funcao_algoritmo.__name__
+        tempo_pre_busca = time()
+        
+        caminho, custo = funcao_algoritmo(grafo_distancias, origem, destino)
+        
+        tempo_de_busca = time() - tempo_pre_busca
+        tempos_de_execucao[nome_algoritmo] = tempo_de_busca
+        custos_dos_caminhos[nome_algoritmo] = custo
 
-    messagebox.showinfo(
-        "Resultado",
-        f"Caminho: {' -> '.join(caminho)}\nCusto total = {custo:.1f} km\nTempo de Busca = {tempo_de_busca:.2f}s"
-    )
-    desenhar_grafo(ax, coordenadas, distancias_cidades, caminho)
-    canvas.draw()
+        if not caminho:
+            messagebox.showerror("Erro", f"Caminho não encontrado com o algoritmo: {nome_algoritmo}")
+            continue
+
+        messagebox.showinfo(
+            f"Resultado - {nome_algoritmo}",
+            f"Algoritmo: {nome_algoritmo}\n"
+            f"Caminho: {' -> '.join(caminho)}\n"
+            f"Custo total = {custo:.1f} km\n"
+            f"Tempo de Busca = {tempo_de_busca:.6f} s"
+        )
+
+        desenhar_grafo(ax, coordenadas, distancias_cidades, caminho)
+        canvas.draw()
+
+    # Comparação dos tempos
+    comparação_resultados = "Comparação de tempos:\n"
+    melhor_tempo = min(tempos_de_execucao, key=tempos_de_execucao.get)
+    
+    for nome, tempo in tempos_de_execucao.items():
+        comparação_resultados += f"{nome}: {tempo:.6f} s\n"
+
+    mensagem_custo = "Comparação de custo:\n"
+    if all(custo == list(custos_dos_caminhos.values())[0] for custo in custos_dos_caminhos.values()):
+        mensagem_custo += "Todos os algoritmos possuem o mesmo custo.\n"
+    else:
+        melhor_custo = min(custos_dos_caminhos, key=custos_dos_caminhos.get)
+        for nome, custo in custos_dos_caminhos.items():
+            mensagem_custo += f"{nome}: {custo:.1f} km\n"
+        mensagem_custo += f"\nAlgoritmo com caminho mais barato: {melhor_custo}\n"
+
+    comparação_resultados += mensagem_custo
+
+    comparação_resultados += f"\nAlgoritmo mais rápido: {melhor_tempo}"
+    comparação_resultados += f"\nAlgoritmo com caminho mais barato: {melhor_custo}"
+
+    messagebox.showinfo("Comparação de Tempos", comparação_resultados)
+
 
 # Carrega dados
 hospitais = carregar_hospitais("dados/hospitais.txt")
@@ -113,11 +148,11 @@ var_orgao.set(orgaos[0].nome)
 opt_orgao = tk.OptionMenu(root, var_orgao, *(o.nome for o in orgaos))
 opt_orgao.pack(fill='x', padx=5)
 
-tk.Label(root, text="Algorítmo de Busca:").pack(padx=5, pady=2)
-var_algoritmo = tk.StringVar(root)
-var_algoritmo.set(ALGORITMOS[0].__name__)
-opt_algoritmo = tk.OptionMenu(root, var_algoritmo, *(alg.__name__ for alg in ALGORITMOS))
-opt_algoritmo.pack(fill='x', padx=5)
+# tk.Label(root, text="Algorítmo de Busca:").pack(padx=5, pady=2)
+# var_algoritmo = tk.StringVar(root)
+# var_algoritmo.set(ALGORITMOS[0].__name__)
+# opt_algoritmo = tk.OptionMenu(root, var_algoritmo, *(alg.__name__ for alg in ALGORITMOS))
+# opt_algoritmo.pack(fill='x', padx=5)
 
 btn = tk.Button(root, text="Realizar Busca", command=realizar_busca)
 btn.pack(pady=8)

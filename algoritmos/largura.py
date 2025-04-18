@@ -1,20 +1,19 @@
-def busca_em_largura(grafo, cidade_atual, cidade_meta):
+def busca_em_largura(grafo, cidade_inicial, cidade_meta):
+    from collections import deque
+
+    fila = deque([(cidade_inicial, [cidade_inicial], 0)])
     visitados = set()
-    fila = [(cidade_atual, [cidade_atual])]  # (nó atual, caminho percorrido)
 
     while fila:
-        vertice, caminho = fila.pop(0)  # remove o primeiro elemento da lista
+        vertice, caminho, custo = fila.popleft()
 
         if vertice == cidade_meta:
-            print(f"Encontrado: {cidade_meta}")
-            print(f"Caminho: {' -> '.join(caminho)}")
-            return caminho
+            return caminho, custo
 
         if vertice not in visitados:
             visitados.add(vertice)
-            for vizinho in grafo[vertice]:
+            for vizinho, custo_aresta in grafo.get(vertice, []):
                 if vizinho not in visitados:
-                    fila.append((vizinho, caminho + [vizinho]))
+                    fila.append((vizinho, caminho + [vizinho], custo + custo_aresta))
 
-    print(f"Nó '{cidade_meta}' não encontrado.")
-    return None
+    return None, float('inf')

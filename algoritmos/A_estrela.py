@@ -3,7 +3,7 @@ import math
 
 from dados.cidades import coordenadas
 
-def heuristica_A_estrela(cidade_atual, cidade_meta):
+def heuristica_A_estrela(cidade_atual, cidade_meta, coordenadas):
     # h(n) do algoritmo: distância em linha reta entre a cidade atual e a meta
 
     x1, y1 = coordenadas[cidade_atual]
