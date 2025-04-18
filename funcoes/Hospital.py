@@ -26,6 +26,12 @@ def carregar_hospitais(nome_arquivo):
 
     return localizacoes
 
+def cidade_via_cep(hospitais, cep):
+    for hospital in hospitais:
+        if hospital.cep == cep:
+            hospital_do_paciente = hospital
+            return hospital.cidade
+
 # Exemplo de uso - rodável usando [python funcoes/Hospital.py]
 if __name__ == "__main__":
     hospitais = carregar_hospitais("dados/hospitais.txt")
