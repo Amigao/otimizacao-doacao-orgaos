@@ -7,6 +7,7 @@ ALGORITMOS = [A_estrela, busca_em_largura]
 
 
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -45,28 +46,51 @@ def desenhar_grafo(ax, coords, arestas, caminho=None):
     ax.set_xlabel("X"); ax.set_ylabel("Y")
     ax.set_title("Rota"); ax.grid(True)
 
+def atualizar_banco_de_dados(pacientes, hospitais):
+    for paciente in pacientes:
+        if (realizar_busca(paciente.nome, cidade_via_cep(hospitais, paciente.cep), paciente.orgao_solicitado)):
+            pacientes.remove(paciente)
+            print(f"Paciente {paciente.nome} removido da lista de espera.")
+            print(f"Órgão {paciente.orgao_solicitado} encontrado para o paciente {paciente.nome}.\n")
+    
+    print("Banco de dados atualizado!")
+    atualizar_treeviews()
+
+def atualizar_treeviews():
+    # Limpa as treeviews
+    tree_pacientes.delete(*tree_pacientes.get_children())
+    tree_orgaos.delete(*tree_orgaos.get_children())
+
+    # Adiciona pacientes
+    for p in pacientes:
+        tree_pacientes.insert("", "end", values=(p.nome, p.idade, p.orgao_solicitado, p.cep, p.data_entrada.strftime("%d/%m/%Y")))
+
+    # Adiciona órgãos
+    for o in orgaos:
+        tree_orgaos.insert("", "end", values=(o.nome, o.tempo_isquemia, o.cep))
+
 # Função do botão
 def realizar_busca_interface():
     nome = entry_nome.get().strip()
     origem = var_cidade.get()
     orgao = var_orgao.get()
     orgao = [o for o in orgaos if o.nome == orgao]
+    nome_orgao = var_orgao.get()
 
-    if not nome or not origem or not orgao:
+    if not nome or not origem or not nome_orgao:
         messagebox.showerror("Erro", "Preencha todos os campos.")
         return
 
     # Pega o nome do órgão escolhido no menu (ex: "Coração")
-    nome_orgao = var_orgao.get()
 
     realizar_busca(nome, origem, nome_orgao)
     
 def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
-    # Filtra todos os órgãos disponíveis desse tipo
+    # Filtra todos os órgãos disponíveis desse cep
     orgaos_disponiveis = [o for o in orgaos if o.nome == nome_orgao]
 
     if not orgaos_disponiveis:
-        messagebox.showerror("Erro", f"Não há órgãos cadastrados do tipo {nome_orgao}.")
+        messagebox.showerror("Erro", f"Não há órgãos cadastrados do cep {nome_orgao}.")
         return
 
     # Associa cada órgão a seu hospital, via CEP
@@ -140,7 +164,7 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
         print(f"\n[!] Transporte especial necessário para o órgão {orgao.nome}.")
         messagebox.showwarning(
             "Atenção",
-            f"Transporte especial necessário para o paciente {paciente.nome}.\n\n"
+            f"Transporte especial necessário para o paciente {nome_paciente}.\n\n"
             f"Existe um {orgao.nome} disponível em {melhor_hospital}.\n"
             f"Entretanto, será preciso utilizar transporte especial para chegar em no máximo {orgao.tempo_isquemia} horas."
         )
@@ -152,7 +176,7 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
         return False
     else:
         print(f"\n>>> Melhor resultado para {orgao.nome}:")
-        print(f"    Paciente: {paciente.nome}")
+        print(f"    Paciente: {nome_paciente}")
         print(f"    Hospital escolhido: {melhor_hospital.nome} ({melhor_hospital.cidade})")
         print(f"    Algoritmo escolhido: {melhor_algoritmo}")
         print(f"    Custo total: {menor_custo:.1f} km")
@@ -160,7 +184,7 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
 
         messagebox.showinfo(
             f"Melhor Resultado - {melhor_algoritmo}",
-            f"Nome do paciente: {paciente.nome}\n"
+            f"Nome do paciente: {nome_paciente}\n"
             f"Órgão: {orgao.nome}\n"
             f"Hospital: {melhor_hospital.nome} ({melhor_hospital.cidade})\n"
             f"Algoritmo: {melhor_algoritmo}\n"
@@ -183,43 +207,57 @@ pacientes = carregar_pacientes("dados/mock_pacientes.txt")
 if not hospitais or not orgaos or not pacientes:
     raise RuntimeError("Falha ao carregar dados.")
 
-# Configura GUI
+# ---------- INTERFACE ----------
 root = tk.Tk()
 root.title("Busca de Rotas por Órgão")
 
+# Nome do paciente
 tk.Label(root, text="Nome do Paciente:").pack(padx=5, pady=2)
-entry_nome = tk.Entry(root); entry_nome.pack(fill='x', padx=5)
+entry_nome = tk.Entry(root)
+entry_nome.pack(fill='x', padx=5)
 
+# Cidade de origem
 tk.Label(root, text="Cidade de Origem:").pack(padx=5, pady=2)
 var_cidade = tk.StringVar(root)
 var_cidade.set(hospitais[0].cidade)
 opt_cidade = tk.OptionMenu(root, var_cidade, *(h.cidade for h in hospitais))
 opt_cidade.pack(fill='x', padx=5)
 
+# Órgão necessário
 tk.Label(root, text="Órgão Necessário:").pack(padx=5, pady=2)
 nomes_unicos = list({o.nome for o in orgaos})
 var_orgao = tk.StringVar(root)
 var_orgao.set(nomes_unicos[0])
 tk.OptionMenu(root, var_orgao, *nomes_unicos).pack(fill='x', padx=5)
 
-# tk.Label(root, text="Algorítmo de Busca:").pack(padx=5, pady=2)
-# var_algoritmo = tk.StringVar(root)
-# var_algoritmo.set(ALGORITMOS[0].__name__)
-# opt_algoritmo = tk.OptionMenu(root, var_algoritmo, *(alg.__name__ for alg in ALGORITMOS))
-# opt_algoritmo.pack(fill='x', padx=5)
+# Botões
+tk.Button(root, text="Realizar Busca", command=realizar_busca_interface).pack(pady=8)
+tk.Button(root, text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais)).pack(pady=8)
 
-btn = tk.Button(root, text="Realizar Busca", command=realizar_busca_interface)
-btn.pack(pady=8)
+# Treeview - Pacientes
+tk.Label(root, text="Fila de Espera:").pack()
+tree_pacientes = ttk.Treeview(root, columns=("nome", "idade", "orgao", "cep", "data"), show="headings")
+tree_pacientes.heading("nome", text="Nome")
+tree_pacientes.heading("idade", text="Idade")
+tree_pacientes.heading("orgao", text="Órgão Solicitado")
+tree_pacientes.heading("cep", text="CEP")
+tree_pacientes.heading("data", text="Data Entrada")
+tree_pacientes.pack(fill='both', padx=5, pady=5, expand=True)
 
-# Matplotlib no Tk
+# Treeview - Órgãos disponíveis
+tk.Label(root, text="Órgãos Disponíveis:").pack()
+tree_orgaos = ttk.Treeview(root, columns=("nome", "tempo", "cep"), show="headings")
+tree_orgaos.heading("nome", text="Nome")
+tree_orgaos.heading("tempo", text="Tempo Isquemia (min)")
+tree_orgaos.heading("cep", text="CEP")
+tree_orgaos.pack(fill='both', padx=5, pady=5, expand=True)
+
+# Gráfico do Matplotlib
 fig, ax = plt.subplots(figsize=(6, 4))
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().pack(fill='both', expand=True, padx=5, pady=5)
 
-for paciente in pacientes:
-    if (realizar_busca(paciente.nome, cidade_via_cep(hospitais, paciente.cep), paciente.orgao_solicitado)):
-        pacientes.remove(paciente)
-        print(f"Paciente {paciente.nome} removido da lista de espera.")
-        print(f"Órgão {paciente.orgao_solicitado} encontrado para o paciente {paciente.nome}.\n")
+# Inicializa os dados nas tabelas
+atualizar_treeviews()
 
 root.mainloop()
