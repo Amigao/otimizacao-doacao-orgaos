@@ -18,8 +18,11 @@ from dados.cidades import distancias_cidades, coordenadas, grafo_distancias
 
 # Funções das classes Hospital e Orgao
 from funcoes.Hospital import carregar_hospitais, cidade_via_cep
-from funcoes.Orgao import carregar_orgaos, calcular_tempo_compatibilidade
+from funcoes.Orgao import carregar_orgaos, calcular_tempo_compatibilidade, Orgao
 from funcoes.Paciente import carregar_pacientes
+
+def somente_inteiros_positivos(valor):
+    return valor.isdigit() and int(valor) > 0 if valor else True  # permite vazio temporariamente
 
 # Desenha o grafo e destaca o caminho
 def desenhar_grafo(ax, coords, arestas, caminho=None):
@@ -197,6 +200,7 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
         canvas.draw()
         if(orgao_final != None):
             orgaos.remove(orgao_final)
+        atualizar_treeviews()
         return True
 
 # Carrega dados
@@ -207,57 +211,164 @@ pacientes = carregar_pacientes("dados/mock_pacientes.txt")
 if not hospitais or not orgaos or not pacientes:
     raise RuntimeError("Falha ao carregar dados.")
 
-# ---------- INTERFACE ----------
+# Suponha que hospitais e orgaos já existam
 root = tk.Tk()
 root.title("Busca de Rotas por Órgão")
 
-# Nome do paciente
-tk.Label(root, text="Nome do Paciente:").pack(padx=5, pady=2)
-entry_nome = tk.Entry(root)
-entry_nome.pack(fill='x', padx=5)
+# --- Layout base com frames ---
+main_frame = tk.Frame(root)
+main_frame.pack(padx=10, pady=10, fill='both', expand=True)
 
-# Cidade de origem
-tk.Label(root, text="Cidade de Origem:").pack(padx=5, pady=2)
+left_frame = tk.Frame(main_frame)
+left_frame.grid(row=0, column=0, sticky='n')
+
+right_frame = tk.Frame(main_frame)
+right_frame.grid(row=0, column=1, sticky='n')
+
+# 1. Frame lateral esquerdo como "box" de busca
+frame_busca = tk.LabelFrame(left_frame, text="Buscar por Órgão", padx=10, pady=10)
+frame_busca.pack(fill="x", padx=10, pady=10)
+
+tk.Label(frame_busca, text="Nome do Paciente:").pack(anchor='w')
+entry_nome = tk.Entry(frame_busca)
+entry_nome.pack(fill='x')
+
+tk.Label(frame_busca, text="Cidade de Origem:").pack(anchor='w', pady=(5,0))
 var_cidade = tk.StringVar(root)
 var_cidade.set(hospitais[0].cidade)
-opt_cidade = tk.OptionMenu(root, var_cidade, *(h.cidade for h in hospitais))
-opt_cidade.pack(fill='x', padx=5)
+combo_cidade = ttk.Combobox(frame_busca, textvariable=var_cidade, values=[h.cidade for h in hospitais], state="readonly")
+combo_cidade.pack(fill='x')
 
-# Órgão necessário
-tk.Label(root, text="Órgão Necessário:").pack(padx=5, pady=2)
+tk.Label(frame_busca, text="Órgão Necessário:").pack(anchor='w', pady=(5,0))
 nomes_unicos = list({o.nome for o in orgaos})
 var_orgao = tk.StringVar(root)
 var_orgao.set(nomes_unicos[0])
-tk.OptionMenu(root, var_orgao, *nomes_unicos).pack(fill='x', padx=5)
+combo_orgao = ttk.Combobox(frame_busca, textvariable=var_orgao, values=nomes_unicos, state="readonly")
+combo_orgao.pack(fill='x')
 
-# Botões
-tk.Button(root, text="Realizar Busca", command=realizar_busca_interface).pack(pady=8)
-tk.Button(root, text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais)).pack(pady=8)
+btn_busca = tk.Button(frame_busca, text="Realizar Busca", command=realizar_busca_interface)
+btn_busca.pack(pady=(10, 0))
 
-# Treeview - Pacientes
-tk.Label(root, text="Fila de Espera:").pack()
-tree_pacientes = ttk.Treeview(root, columns=("nome", "idade", "orgao", "cep", "data"), show="headings")
-tree_pacientes.heading("nome", text="Nome")
-tree_pacientes.heading("idade", text="Idade")
-tree_pacientes.heading("orgao", text="Órgão Solicitado")
-tree_pacientes.heading("cep", text="CEP")
-tree_pacientes.heading("data", text="Data Entrada")
-tree_pacientes.pack(fill='both', padx=5, pady=5, expand=True)
+btn_atualizar = tk.Button(text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais))
+btn_atualizar.pack(pady=5)
 
-# Treeview - Órgãos disponíveis
-tk.Label(root, text="Órgãos Disponíveis:").pack()
-tree_orgaos = ttk.Treeview(root, columns=("nome", "tempo", "cep"), show="headings")
-tree_orgaos.heading("nome", text="Nome")
-tree_orgaos.heading("tempo", text="Tempo Isquemia (min)")
-tree_orgaos.heading("cep", text="CEP")
-tree_orgaos.pack(fill='both', padx=5, pady=5, expand=True)
+# 2. Outro box pra adicionar órgão
+frame_add_orgao = tk.LabelFrame(left_frame, text="Adicionar Órgão", padx=10, pady=10)
+frame_add_orgao.pack(fill="x", padx=10, pady=10)
 
-# Gráfico do Matplotlib
+btn_nova_janela = tk.Button(frame_add_orgao, text="Abrir Janela", command=lambda: abrir_janela_adicionar_orgao())
+btn_nova_janela.pack()
+
+# Função que abre nova janela
+def abrir_janela_adicionar_orgao():
+    nova_janela = tk.Toplevel()
+    nova_janela.title("Adicionar Órgão")
+
+    tk.Label(nova_janela, text="Órgão:").pack(pady=5)
+    nomes_unicos = list({o.nome for o in orgaos})
+    var_orgao = tk.StringVar(nova_janela)
+    var_orgao.set(nomes_unicos[0])
+    entry_orgao = ttk.Combobox(nova_janela, textvariable=var_orgao, values=nomes_unicos, state="readonly")
+    entry_orgao.pack()
+
+
+    tk.Label(nova_janela, text="Tempo de Isquemia (horas):").pack(pady=5)
+    vcmd = (nova_janela.register(somente_inteiros_positivos), "%P")
+    entry_tempo = tk.Entry(nova_janela, validate="key", validatecommand=vcmd)
+    entry_tempo.pack()
+
+    tk.Label(nova_janela, text="CEP de Origem:").pack(pady=5)
+    var_cep = tk.StringVar(nova_janela)
+    var_cep.set(hospitais[0].cep)
+    entry_cep = ttk.Combobox(
+        nova_janela, 
+        textvariable=var_cep, 
+        values=[f"{h.cidade} ({h.cep})" for h in hospitais], 
+        state="readonly"
+    )
+    entry_cep.pack()
+
+    btn_salvar = tk.Button(
+        nova_janela, 
+        text="Salvar", 
+        command=lambda: (
+            salvar_orgao(entry_orgao.get(), entry_tempo.get(), var_cep.get().split("(")[1].split(")")[0]), 
+            nova_janela.destroy()
+        )
+    )
+    btn_salvar.pack(pady=10)
+
+def salvar_orgao(nome, tempo, cep):
+    # aqui você salva no seu sistema!
+    novo_orgao = Orgao(nome, cep, tempo)
+    orgaos.append(novo_orgao)
+    print(f"Órgão adicionado: {nome}, {tempo} hr, CEP {cep}")
+    atualizar_treeviews()
+
+
+# # --- Entrada de dados (centralizados) ---
+# tk.Label(left_frame, text="Nome do Paciente:").pack(padx=5, pady=2)
+# entry_nome = tk.Entry(left_frame, justify="center")
+# entry_nome.pack(fill='x', padx=5)
+
+# tk.Label(left_frame, text="Cidade de Origem:").pack(padx=5, pady=2)
+# var_cidade = tk.StringVar(root)
+# var_cidade.set(hospitais[0].cidade)
+# opt_cidade = tk.OptionMenu(left_frame, var_cidade, *(h.cidade for h in hospitais))
+# opt_cidade.pack(fill='x', padx=5)
+
+# tk.Label(left_frame, text="Órgão Necessário:").pack(padx=5, pady=2)
+# nomes_unicos = list({o.nome for o in orgaos})
+# var_orgao = tk.StringVar(root)
+# var_orgao.set(nomes_unicos[0])
+# tk.OptionMenu(left_frame, var_orgao, *nomes_unicos).pack(fill='x', padx=5)
+
+# # --- Botões ---
+# tk.Button(left_frame, text="Realizar Busca", command=realizar_busca_interface).pack(pady=(10, 5))
+# tk.Button(left_frame, text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais)).pack(pady=(0, 10))
+# --- Treeview de Pacientes ---
+tk.Label(right_frame, text="Fila de Espera:").pack(anchor="w", padx=5, pady=(10, 0))
+
+tree_pacientes = ttk.Treeview(
+    right_frame, columns=("nome", "idade", "orgao", "cep", "data"), show="headings", height=8
+)
+tree_pacientes.heading("nome", text="Nome", anchor='center')
+tree_pacientes.heading("idade", text="Idade", anchor='center')
+tree_pacientes.heading("orgao", text="Órgão Solicitado", anchor='center')
+tree_pacientes.heading("cep", text="CEP", anchor='center')
+tree_pacientes.heading("data", text="Data Entrada", anchor='center')
+
+tree_pacientes.column("nome", anchor='center')
+tree_pacientes.column("idade", anchor='center')
+tree_pacientes.column("orgao", anchor='center')
+tree_pacientes.column("cep", anchor='center')
+tree_pacientes.column("data", anchor='center')
+
+tree_pacientes.pack(fill='x', padx=5, pady=5)
+
+# --- Treeview de Órgãos disponíveis ---
+tk.Label(right_frame, text="Órgãos Disponíveis:").pack(anchor="w", padx=5, pady=(10, 0))
+
+tree_orgaos = ttk.Treeview(
+    right_frame, columns=("nome", "tempo", "cep"), show="headings", height=5
+)
+tree_orgaos.heading("nome", text="Nome", anchor='center')
+tree_orgaos.heading("tempo", text="Tempo Isquemia (hrs)", anchor='center')
+tree_orgaos.heading("cep", text="CEP", anchor='center')
+
+tree_orgaos.column("nome", anchor='center')
+tree_orgaos.column("tempo", anchor='center')
+tree_orgaos.column("cep", anchor='center')
+
+tree_orgaos.pack(fill='x', padx=5, pady=5)
+
+
+# --- Gráfico do Matplotlib (oculto inicialmente) ---
 fig, ax = plt.subplots(figsize=(6, 4))
 canvas = FigureCanvasTkAgg(fig, master=root)
-canvas.get_tk_widget().pack(fill='both', expand=True, padx=5, pady=5)
+# Só será exibido quando a busca for realizada com sucesso
 
-# Inicializa os dados nas tabelas
+# --- Inicializa os dados nas tabelas ---
 atualizar_treeviews()
 
 root.mainloop()
