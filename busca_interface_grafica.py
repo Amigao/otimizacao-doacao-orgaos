@@ -20,7 +20,7 @@ from funcoes.Hospital import carregar_hospitais, cidade_via_cep, cep_via_cidade
 from funcoes.Orgao import carregar_orgaos, calcular_tempo_compatibilidade, Orgao
 from funcoes.Paciente import carregar_pacientes, ordenar_pacientes, Paciente
 
-largura, altura = 450, 280
+largura, altura = 500, 280
 
 def somente_inteiros_positivos(valor):
     return valor.isdigit() and int(valor) > 0 if valor else True  # permite vazio temporariamente
@@ -29,7 +29,6 @@ def mostrar_aviso(paciente, orgao, melhor_hospital):
     resposta = None
     aviso = tk.Toplevel()
     aviso.title("Atenção")
-    aviso.resizable(False, False)
     aviso.withdraw()
 
     # Widgets já no lugar antes de posicionar
@@ -82,13 +81,13 @@ def mostrar_aviso(paciente, orgao, melhor_hospital):
     btn_nao = tk.Button(botoes, text="Não", width=10, command=escolher_nao)
     btn_nao.grid(row=0, column=1, padx=10)
 
-    # Agora sim calcula e aplica a posição
-    aviso.update_idletasks()
     largura_tela = aviso.winfo_screenwidth()
     altura_tela = aviso.winfo_screenheight()
     x = (largura_tela // 2) - (largura // 2)
     y = (altura_tela // 2) - (altura // 2)
     aviso.geometry(f"{largura}x{altura}+{x}+{y}")
+    # aviso.minsize(largura, altura)
+    # aviso.maxsize(largura, altura)
 
     aviso.deiconify() 
     aviso.grab_set()
@@ -111,7 +110,6 @@ def mostrar_resultado_final(paciente, orgao, melhor_hospital, melhor_algoritmo, 
     janela = tk.Toplevel()
     janela.withdraw()
     janela.title(f"Melhor Resultado - {melhor_algoritmo}")
-    janela.resizable(False, False)
 
     frame = tk.Frame(janela, padx=15, pady=15)
     frame.pack()
@@ -133,24 +131,33 @@ def mostrar_resultado_final(paciente, orgao, melhor_hospital, melhor_algoritmo, 
 
     for titulo, valor in infos:
         linha = tk.Frame(frame)
-        linha.pack(anchor="w")
+        linha.pack(anchor="w", fill="x")
         label_titulo = tk.Label(linha, text=titulo, font=("Arial", 10, "bold"))
         label_titulo.pack(side="left")
         label_valor = tk.Label(linha, text=f" {valor}", font=("Arial", 10), wraplength=300, justify="left")
         label_valor.pack(side="left")
 
+    # --- Gráfico do Matplotlib ---
+    fig, ax = plt.subplots(figsize=(5, 3.5))
+    desenhar_grafo(ax, coordenadas, distancias_cidades, caminho=melhor_caminho)
+    canvas = FigureCanvasTkAgg(fig, master=frame)
+    canvas.draw()
+    canvas.get_tk_widget().pack(pady=(20, 10))
+
     # Botão para fechar
     botao = tk.Button(frame, text="Fechar", width=12, command=janela.destroy)
-    botao.pack(pady=(20, 0))
+    botao.pack(pady=(10, 0))
 
     # Centralizar janela
-    janela.update_idletasks()
     largura_tela = janela.winfo_screenwidth()
     altura_tela = janela.winfo_screenheight()
     x = (largura_tela // 2) - (largura // 2)
-    y = (altura_tela // 2) - (altura // 2)
-    janela.geometry(f"{largura}x{altura}+{x}+{y}")
-
+    y = (altura_tela // 2) - (altura + 350 // 2)
+    janela.wm_geometry(f"{largura}x{altura + 350}+{x}+{y}")
+    # janela.minsize(largura, altura + 350)
+    # janela.maxsize(largura, altura + 350)
+    # janela.resizable(False, False)
+    
     janela.deiconify() 
     janela.grab_set()
     janela.focus_force()
@@ -350,8 +357,6 @@ def buscar_por_paciente(paciente, cidade_origem, orgaos_com_hospital):
             paciente, orgao, melhor_hospital, melhor_algoritmo, melhor_caminho, menor_custo, menor_tempo
         )
 
-        desenhar_grafo(ax, coordenadas, distancias_cidades, caminho=melhor_caminho)
-        canvas.draw()
         if(orgao_final != None):
             orgaos.remove(orgao_final)
             pacientes.remove(paciente)
@@ -368,7 +373,6 @@ pacientes = carregar_pacientes("dados/mock_pacientes.txt")
 if not hospitais or not orgaos or not pacientes:
     raise RuntimeError("Falha ao carregar dados.")
 
-# Suponha que hospitais e orgaos já existam
 root = tk.Tk()
 root.title("Busca de Rotas por Órgão")
 
@@ -432,7 +436,7 @@ def abrir_janela_adicionar_orgao():
     var_cep = tk.StringVar(nova_janela)
     var_cep.set(hospitais[0].cep)
     entry_cep = ttk.Combobox(nova_janela, textvariable=var_cep, values=[f"{h.cidade} - {h.cep}" for h in hospitais], state="readonly")
-    entry_cep.pack()
+    entry_cep.pack(fill='x')
 
     btn_salvar = tk.Button(
         nova_janela, 
@@ -443,6 +447,17 @@ def abrir_janela_adicionar_orgao():
         )
     )
     btn_salvar.pack(pady=10)
+    nova_janela.update_idletasks()
+    largura_nova_janela = nova_janela.winfo_width()
+    altura_nova_janela = nova_janela.winfo_height()
+
+    largura_tela = nova_janela.winfo_screenwidth()
+    altura_tela = nova_janela.winfo_screenheight()
+
+    x = (largura_tela // 2) - (largura_nova_janela // 2)
+    y = (altura_tela // 2) - (altura_nova_janela // 2)
+
+    nova_janela.wm_geometry(f"{largura}x{altura // 2}+{x}+{y}")
 
 # --- Treeview de Pacientes ---
 tk.Label(right_frame, text="Fila de Espera:").pack(anchor="w", padx=5, pady=(10, 0))
@@ -483,10 +498,18 @@ tree_orgaos.pack(fill='x', padx=5, pady=5)
 btn_atualizar = tk.Button(right_frame, text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais))
 btn_atualizar.pack(fill='x', padx=5, pady=(10, 0))
 
-# --- Gráfico do Matplotlib (oculto inicialmente) ---
-fig, ax = plt.subplots(figsize=(6, 4))
-canvas = FigureCanvasTkAgg(fig, master=root)
-# Só será exibido quando a busca for realizada com sucesso
+# --- Centralizar janela principal ---
+root.update_idletasks()
+largura_janela_principal = root.winfo_width()
+altura_janela_principal = root.winfo_height()
+
+largura_tela = root.winfo_screenwidth()
+altura_tela = root.winfo_screenheight()
+
+x = (largura_tela // 2) - (largura_janela_principal // 2)
+y = (altura_tela // 2) - (altura_janela_principal // 2)
+
+root.geometry(f"+{x}+{y}")
 
 # --- Inicializa os dados nas tabelas ---
 atualizar_treeviews()
