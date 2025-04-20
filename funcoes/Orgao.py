@@ -12,6 +12,7 @@ class Orgao:
         return f"Órgão: {self.nome} \nTempo de isquemia: {self.tempo_isquemia} horas \n"
 
 def calcular_tempo_compatibilidade(orgao, distancia):
+    print(f"Tempo: {distancia/VELOCIDADE_MEDIA} horas. Tempo de isquemia: {orgao.tempo_isquemia} horas")
     return (float(distancia) / VELOCIDADE_MEDIA) <= float(orgao.tempo_isquemia)
 
 def carregar_orgaos(nome_arquivo):

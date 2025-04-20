@@ -6,7 +6,7 @@ class Hospital:
         self.cep = cep  
 
     def __repr__(self):
-        return f"{self.nome}, ({self.cidade}-{self.estado}, {self.cep})" 
+        return f"{self.nome}, ({self.cidade}-{self.estado})" 
         # Orgaos: {self.orgaos_disponiveis})"
 
 def carregar_hospitais(nome_arquivo):

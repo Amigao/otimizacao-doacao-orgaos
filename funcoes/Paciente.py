@@ -1,4 +1,6 @@
 from datetime import datetime
+from algoritmos.A_estrela import heuristica_A_estrela
+from funcoes.Hospital import cidade_via_cep
 
 class Paciente:
     def __init__(self, nome, data_entrada, idade, cep, orgao_solicitado):
@@ -17,6 +19,12 @@ class Paciente:
     def tempo_entrada(self):
         # Calcula o tempo decorrido desde a entrada até o momento atual
         return (datetime.now() - self.data_entrada).days
+    
+def ordenar_pacientes(pacientes, hospitais, orgao_cidade):
+    # Ordena os pacientes por data de entrada; então por idade (decrescente); e por heurística A* (menor distância)
+    return sorted(pacientes, key=lambda paciente: (paciente.data_entrada,
+                                                    -int(paciente.idade), 
+                                                    heuristica_A_estrela(cidade_via_cep(hospitais, paciente.cep), orgao_cidade)))
 
 def carregar_pacientes(nome_arquivo):
     pacientes = []
