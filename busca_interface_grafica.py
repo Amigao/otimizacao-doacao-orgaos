@@ -2,9 +2,7 @@
 from algoritmos.A_estrela import A_estrela
 from algoritmos.largura import busca_em_largura
 # ADICIONAR IMPORTS DE ALGORITMOS AQUI!
-
 ALGORITMOS = [A_estrela, busca_em_largura]
-
 
 import tkinter as tk
 from tkinter import ttk
@@ -20,10 +18,143 @@ from dados.cidades import distancias_cidades, coordenadas, grafo_distancias
 # Funções das classes Hospital e Orgao
 from funcoes.Hospital import carregar_hospitais, cidade_via_cep, cep_via_cidade
 from funcoes.Orgao import carregar_orgaos, calcular_tempo_compatibilidade, Orgao
-from funcoes.Paciente import carregar_pacientes, Paciente
+from funcoes.Paciente import carregar_pacientes, ordenar_pacientes, Paciente
+
+largura, altura = 450, 280
 
 def somente_inteiros_positivos(valor):
     return valor.isdigit() and int(valor) > 0 if valor else True  # permite vazio temporariamente
+
+def mostrar_aviso(paciente, orgao, melhor_hospital):
+    resposta = None
+    aviso = tk.Toplevel()
+    aviso.title("Atenção")
+    aviso.resizable(False, False)
+    aviso.withdraw()
+
+    # Widgets já no lugar antes de posicionar
+    frame = tk.Frame(aviso, padx=10, pady=10)
+    frame.pack(expand=True, fill="both")
+
+    icone = tk.Label(frame, text="⚠️", font=("Arial", 24))
+    icone.grid(row=0, column=0, sticky="n")
+
+    texto_principal = tk.Label(
+        frame,
+        text=f"Transporte especial necessário para o paciente {paciente.nome}.",
+        font=("Arial", 10, "bold"),
+        justify="center",
+        wraplength=largura - 60
+    )
+    texto_principal.grid(row=0, column=1, sticky="w", padx=10)
+
+    texto_extra = tk.Label(
+        frame,
+        text=(
+            f"\nExiste um {orgao.nome} disponível em {melhor_hospital}.\n"
+            f"Entretanto, será preciso utilizar transporte especial para chegar em no máximo {orgao.tempo_isquemia} horas."
+            f"\n\n\nO transporte especial vai ser utilizado?"
+        ),
+        font=("Arial", 10),
+        justify="left",
+        wraplength=largura - 20
+    )
+    texto_extra.grid(row=1, column=0, columnspan=2, sticky="w", pady=(10, 0))
+
+    # Funções dos botões
+    def escolher_sim():
+        nonlocal resposta
+        resposta = True
+        aviso.destroy()
+
+    def escolher_nao():
+        nonlocal resposta
+        resposta = False
+        aviso.destroy()
+
+    # Botões Sim e Não
+    botoes = tk.Frame(aviso)
+    botoes.pack(pady=20)
+
+    btn_sim = tk.Button(botoes, text="Sim", width=10, command=escolher_sim)
+    btn_sim.grid(row=0, column=0, padx=10)
+
+    btn_nao = tk.Button(botoes, text="Não", width=10, command=escolher_nao)
+    btn_nao.grid(row=0, column=1, padx=10)
+
+    # Agora sim calcula e aplica a posição
+    aviso.update_idletasks()
+    largura_tela = aviso.winfo_screenwidth()
+    altura_tela = aviso.winfo_screenheight()
+    x = (largura_tela // 2) - (largura // 2)
+    y = (altura_tela // 2) - (altura // 2)
+    aviso.geometry(f"{largura}x{altura}+{x}+{y}")
+
+    aviso.deiconify() 
+    aviso.grab_set()
+    aviso.focus_force()
+    aviso.wait_window()
+    
+    # Aqui você decide o que fazer com a resposta
+    if resposta is True:
+        print("Usuário escolheu usar transporte especial.")
+        pacientes.remove(paciente)
+        orgaos.remove(orgao)
+        return True
+    elif resposta is False:
+        print("Usuário NÃO vai usar transporte especial.")
+        return False
+    else:
+        print("Janela foi fechada sem resposta.")  # Caso o usuário feche no X
+
+def mostrar_resultado_final(paciente, orgao, melhor_hospital, melhor_algoritmo, melhor_caminho, menor_custo, menor_tempo):
+    janela = tk.Toplevel()
+    janela.withdraw()
+    janela.title(f"Melhor Resultado - {melhor_algoritmo}")
+    janela.resizable(False, False)
+
+    frame = tk.Frame(janela, padx=15, pady=15)
+    frame.pack()
+
+    # Título
+    titulo = tk.Label(frame, text="✓ Órgão encontrado!", font=("Arial", 12, "bold"))
+    titulo.pack(pady=(0, 10))
+
+    # Infos formatadas
+    infos = [
+        ("Nome do paciente:", paciente.nome),
+        ("Órgão:", orgao.nome),
+        ("Hospital:", f"{melhor_hospital.nome} ({melhor_hospital.cidade})"),
+        ("Algoritmo utilizado:", melhor_algoritmo),
+        ("Caminho:", " -> ".join(melhor_caminho)),
+        ("Custo total:", f"{menor_custo:.1f} km"),
+        ("Tempo de busca:", f"{menor_tempo:.6f} s"),
+    ]
+
+    for titulo, valor in infos:
+        linha = tk.Frame(frame)
+        linha.pack(anchor="w")
+        label_titulo = tk.Label(linha, text=titulo, font=("Arial", 10, "bold"))
+        label_titulo.pack(side="left")
+        label_valor = tk.Label(linha, text=f" {valor}", font=("Arial", 10), wraplength=300, justify="left")
+        label_valor.pack(side="left")
+
+    # Botão para fechar
+    botao = tk.Button(frame, text="Fechar", width=12, command=janela.destroy)
+    botao.pack(pady=(20, 0))
+
+    # Centralizar janela
+    janela.update_idletasks()
+    largura_tela = janela.winfo_screenwidth()
+    altura_tela = janela.winfo_screenheight()
+    x = (largura_tela // 2) - (largura // 2)
+    y = (altura_tela // 2) - (altura // 2)
+    janela.geometry(f"{largura}x{altura}+{x}+{y}")
+
+    janela.deiconify() 
+    janela.grab_set()
+    janela.focus_force()
+    janela.wait_window()
 
 # Desenha o grafo e destaca o caminho
 def desenhar_grafo(ax, coords, arestas, caminho=None):
@@ -51,13 +182,37 @@ def desenhar_grafo(ax, coords, arestas, caminho=None):
     ax.set_title("Rota"); ax.grid(True)
 
 def atualizar_banco_de_dados(pacientes, hospitais):
-    for paciente in pacientes:
+    for paciente in list(pacientes):  # Iterar sobre uma cópia da lista, pois a função realizar_busca remove pacientes da lista original
         if (realizar_busca(paciente, cidade_via_cep(hospitais, paciente.cep), paciente.orgao_solicitado)):
-            pacientes.remove(paciente)
             print(f"Paciente {paciente.nome} removido da lista de espera.")
             print(f"Órgão {paciente.orgao_solicitado} encontrado para o paciente {paciente.nome}.\n")
     
     print("Banco de dados atualizado!")
+    atualizar_treeviews()
+
+def salvar_orgao(nome, cep):
+    for o in orgaos_possiveis: 
+        if (nome == o.nome): 
+            tempo = o.tempo_isquemia
+    novo_orgao = Orgao(nome, tempo, cep)
+    orgaos.append(novo_orgao)
+    print(f"Órgão adicionado: {nome}, {tempo} hr, CEP {cep}")
+    
+    pacientes_aguardando_orgao = []
+    for paciente in pacientes:
+        if (paciente.orgao_solicitado == novo_orgao.nome):
+            pacientes_aguardando_orgao.append(paciente)
+    ordenar_pacientes(pacientes_aguardando_orgao, hospitais, cidade_via_cep(hospitais, novo_orgao.cep))
+    
+    for paciente in list(pacientes_aguardando_orgao):
+        orgaos_com_hospital = []
+        hosp = next((h for h in hospitais if h.cep == novo_orgao.cep), None)
+        if hosp:
+            orgaos_com_hospital.append((novo_orgao, hosp))
+
+        if (buscar_por_paciente(paciente, cidade_via_cep(hospitais, paciente.cep), orgaos_com_hospital)):
+            pacientes_aguardando_orgao.remove(paciente)
+            break
     atualizar_treeviews()
 
 def atualizar_treeviews():
@@ -86,17 +241,25 @@ def realizar_busca_interface():
         messagebox.showerror("Erro", "Preencha todos os campos.")
         return
 
-    novo_paciente = Paciente(nome, date.today(), idade, cep_via_cidade(hospitais, origem), nome_orgao)
+    #datetime.combine(date.today(), datetime.min.time()) usado para garantir compatibilidade com o formato de data e permitir comparação entre datas na ordenação
+    novo_paciente = Paciente(nome, datetime.combine(date.today(), datetime.min.time()), idade, cep_via_cidade(hospitais, origem), nome_orgao)
     pacientes.append(novo_paciente)
     atualizar_treeviews()
 
-    realizar_busca(novo_paciente, origem, nome_orgao)
+    if not orgaos:
+        messagebox.showerror("Banco de doações vazio", "Não há órgãos disponíveis, paciente adicionado à lista de espera.")
+        return False
+    else:
+        realizar_busca(novo_paciente, origem, nome_orgao)
     
 def realizar_busca(paciente, cidade_origem, nome_orgao):
+    if not orgaos:
+        print("Não há órgãos disponíveis.")
+        return False
     orgaos_disponiveis = [o for o in orgaos if o.nome == nome_orgao]
 
     if not orgaos_disponiveis:
-        messagebox.showerror("Erro", f"Não há órgãos cadastrados do tipo {nome_orgao}.")
+        messagebox.showerror("Erro", f"Não há órgãos disponíveis do tipo {nome_orgao}.")
         return
 
     orgaos_com_hospital = []
@@ -109,6 +272,9 @@ def realizar_busca(paciente, cidade_origem, nome_orgao):
         messagebox.showerror("Erro", "Nenhum hospital encontrado para os órgãos disponíveis.")
         return
 
+    return buscar_por_paciente(paciente, cidade_origem, orgaos_com_hospital)
+
+def buscar_por_paciente(paciente, cidade_origem, orgaos_com_hospital):
     melhor_hospital = None
     melhor_algoritmo = None
     melhor_caminho = None
@@ -167,14 +333,7 @@ def realizar_busca(paciente, cidade_origem, nome_orgao):
 
     if transporte_especial:
         print(f"\n[!] Transporte especial necessário para o órgão {orgao.nome}.")
-        messagebox.showwarning(
-            "Atenção",
-            f"Transporte especial necessário para o paciente {paciente.nome}.\n\n"
-            f"Existe um {orgao.nome} disponível em {melhor_hospital}.\n"
-            f"Entretanto, será preciso utilizar transporte especial para chegar em no máximo {orgao.tempo_isquemia} horas."
-        )
-        return False
-        # TODO: pegar input da interface questionando se o transporte especial será utilizado ou o paciente permanecerá na fila de espera
+        return mostrar_aviso(paciente, orgao, melhor_hospital)
     elif not melhor_caminho:
         print(f"[!] Nenhum caminho encontrado para o órgão {orgao.nome}.")
         messagebox.showerror("Erro", f"Nenhum caminho encontrado para o órgão {orgao.nome}.")
@@ -187,15 +346,8 @@ def realizar_busca(paciente, cidade_origem, nome_orgao):
         print(f"    Custo total: {menor_custo:.1f} km")
         print(f"    Tempo de busca: {menor_tempo:.6f} s")
 
-        messagebox.showinfo(
-            f"Melhor Resultado - {melhor_algoritmo}",
-            f"Nome do paciente: {paciente.nome}\n"
-            f"Órgão: {orgao.nome}\n"
-            f"Hospital: {melhor_hospital.nome} ({melhor_hospital.cidade})\n"
-            f"Algoritmo: {melhor_algoritmo}\n"
-            f"Caminho: {' -> '.join(melhor_caminho)}\n"
-            f"Custo total = {menor_custo:.1f} km\n"
-            f"Tempo de Busca = {menor_tempo:.6f} s"
+        mostrar_resultado_final(
+            paciente, orgao, melhor_hospital, melhor_algoritmo, melhor_caminho, menor_custo, menor_tempo
         )
 
         desenhar_grafo(ax, coordenadas, distancias_cidades, caminho=melhor_caminho)
@@ -259,9 +411,6 @@ combo_orgao.pack(fill='x')
 btn_busca = tk.Button(frame_busca, text="Realizar Busca", command=realizar_busca_interface)
 btn_busca.pack(pady=(10, 0))
 
-btn_atualizar = tk.Button(text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais))
-btn_atualizar.pack(pady=5)
-
 # 2. Outro box pra adicionar órgão
 frame_add_orgao = tk.LabelFrame(left_frame, text="Doação de Órgao", padx=10, pady=10)
 frame_add_orgao.pack(fill="x", padx=10, pady=10)
@@ -275,21 +424,14 @@ def abrir_janela_adicionar_orgao():
     nova_janela.title("Adicionar Órgão")
 
     tk.Label(nova_janela, text="Órgão:").pack(pady=5)
-    nomes_unicos = list({o.nome for o in orgaos_possiveis})
     var_orgao = tk.StringVar(nova_janela)
-    var_orgao.set(nomes_unicos[0])
     entry_orgao = ttk.Combobox(nova_janela, textvariable=var_orgao, values=nomes_unicos, state="readonly")
-    entry_orgao.pack()
+    entry_orgao.pack(fill='x')
 
     tk.Label(nova_janela, text="CEP de Origem:").pack(pady=5)
     var_cep = tk.StringVar(nova_janela)
     var_cep.set(hospitais[0].cep)
-    entry_cep = ttk.Combobox(
-        nova_janela, 
-        textvariable=var_cep, 
-        values=[f"{h.cidade} - {h.cep}" for h in hospitais], 
-        state="readonly"
-    )
+    entry_cep = ttk.Combobox(nova_janela, textvariable=var_cep, values=[f"{h.cidade} - {h.cep}" for h in hospitais], state="readonly")
     entry_cep.pack()
 
     btn_salvar = tk.Button(
@@ -302,37 +444,6 @@ def abrir_janela_adicionar_orgao():
     )
     btn_salvar.pack(pady=10)
 
-def salvar_orgao(nome, cep):
-    # aqui você salva no seu sistema!
-    for o in orgaos_possiveis: 
-        if (nome == o.nome): 
-            tempo = o.tempo_isquemia
-    novo_orgao = Orgao(nome, tempo, cep)
-    orgaos.append(novo_orgao)
-    print(f"Órgão adicionado: {nome}, {tempo} hr, CEP {cep}")
-    atualizar_treeviews()
-
-
-# # --- Entrada de dados (centralizados) ---
-# tk.Label(left_frame, text="Nome do Paciente:").pack(padx=5, pady=2)
-# entry_nome = tk.Entry(left_frame, justify="center")
-# entry_nome.pack(fill='x', padx=5)
-
-# tk.Label(left_frame, text="Cidade de Origem:").pack(padx=5, pady=2)
-# var_cidade = tk.StringVar(root)
-# var_cidade.set(hospitais[0].cidade)
-# opt_cidade = tk.OptionMenu(left_frame, var_cidade, *(h.cidade for h in hospitais))
-# opt_cidade.pack(fill='x', padx=5)
-
-# tk.Label(left_frame, text="Órgão Necessário:").pack(padx=5, pady=2)
-# nomes_unicos = list({o.nome for o in orgaos})
-# var_orgao = tk.StringVar(root)
-# var_orgao.set(nomes_unicos[0])
-# tk.OptionMenu(left_frame, var_orgao, *nomes_unicos).pack(fill='x', padx=5)
-
-# # --- Botões ---
-# tk.Button(left_frame, text="Realizar Busca", command=realizar_busca_interface).pack(pady=(10, 5))
-# tk.Button(left_frame, text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais)).pack(pady=(0, 10))
 # --- Treeview de Pacientes ---
 tk.Label(right_frame, text="Fila de Espera:").pack(anchor="w", padx=5, pady=(10, 0))
 
@@ -369,6 +480,8 @@ tree_orgaos.column("cidade", anchor='center')
 
 tree_orgaos.pack(fill='x', padx=5, pady=5)
 
+btn_atualizar = tk.Button(right_frame, text="Atualizar fila de espera", command=lambda: atualizar_banco_de_dados(pacientes, hospitais))
+btn_atualizar.pack(fill='x', padx=5, pady=(10, 0))
 
 # --- Gráfico do Matplotlib (oculto inicialmente) ---
 fig, ax = plt.subplots(figsize=(6, 4))
