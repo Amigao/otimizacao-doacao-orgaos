@@ -3,7 +3,7 @@ import math
 
 from dados.cidades import coordenadas
 
-def heuristica_A_estrela(cidade_atual, cidade_meta, coordenadas):
+def heuristica_A_estrela(cidade_atual, cidade_meta):
     # h(n) do algoritmo: distância em linha reta entre a cidade atual e a meta
 
     x1, y1 = coordenadas[cidade_atual]
@@ -14,7 +14,7 @@ def A_estrela(grafo, cidade_inicial, cidade_meta):
     # Base do algoritmo A*
 
     open_set = []
-    h_inicial = heuristica_A_estrela(cidade_inicial, cidade_meta, coordenadas)
+    h_inicial = heuristica_A_estrela(cidade_inicial, cidade_meta)
     heapq.heappush(open_set, (h_inicial, cidade_inicial, 0))
     
     came_from = {}   # Para reconstruir o caminho
@@ -38,7 +38,7 @@ def A_estrela(grafo, cidade_inicial, cidade_meta):
         # Explora os vizinhos
         for vizinho, custo in grafo.get(atual, []):
             novo_g = g_atual + custo
-            h_vizinho = heuristica_A_estrela(vizinho, cidade_meta, coordenadas)
+            h_vizinho = heuristica_A_estrela(vizinho, cidade_meta)
             f_vizinho = novo_g + h_vizinho
 
             if vizinho not in g_score or novo_g < g_score[vizinho]:
