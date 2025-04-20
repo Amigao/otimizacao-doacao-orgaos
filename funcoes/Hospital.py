@@ -29,8 +29,12 @@ def carregar_hospitais(nome_arquivo):
 def cidade_via_cep(hospitais, cep):
     for hospital in hospitais:
         if hospital.cep == cep:
-            hospital_do_paciente = hospital
             return hospital.cidade
+
+def cep_via_cidade(hospitais, cidade):
+    for hospital in hospitais:
+        if hospital.cidade == cidade:
+            return hospital.cep
 
 # Exemplo de uso - rodável usando [python funcoes/Hospital.py]
 if __name__ == "__main__":

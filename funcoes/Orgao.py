@@ -1,9 +1,7 @@
-from datetime import datetime
-
 VELOCIDADE_MEDIA = 80  # Velocidade média de transporte (km/h)
 
 class Orgao:
-    def __init__(self, nome, cep, tempo_isquemia):
+    def __init__(self, nome, tempo_isquemia, cep=None):
         self.nome = nome
 
         self.cep = cep

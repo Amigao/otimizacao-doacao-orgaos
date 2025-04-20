@@ -12,14 +12,15 @@ from tkinter import messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from time import time
+from datetime import datetime, date
 
 # Importa os dados das cidades
 from dados.cidades import distancias_cidades, coordenadas, grafo_distancias
 
 # Funções das classes Hospital e Orgao
-from funcoes.Hospital import carregar_hospitais, cidade_via_cep
+from funcoes.Hospital import carregar_hospitais, cidade_via_cep, cep_via_cidade
 from funcoes.Orgao import carregar_orgaos, calcular_tempo_compatibilidade, Orgao
-from funcoes.Paciente import carregar_pacientes
+from funcoes.Paciente import carregar_pacientes, Paciente
 
 def somente_inteiros_positivos(valor):
     return valor.isdigit() and int(valor) > 0 if valor else True  # permite vazio temporariamente
@@ -51,7 +52,7 @@ def desenhar_grafo(ax, coords, arestas, caminho=None):
 
 def atualizar_banco_de_dados(pacientes, hospitais):
     for paciente in pacientes:
-        if (realizar_busca(paciente.nome, cidade_via_cep(hospitais, paciente.cep), paciente.orgao_solicitado)):
+        if (realizar_busca(paciente, cidade_via_cep(hospitais, paciente.cep), paciente.orgao_solicitado)):
             pacientes.remove(paciente)
             print(f"Paciente {paciente.nome} removido da lista de espera.")
             print(f"Órgão {paciente.orgao_solicitado} encontrado para o paciente {paciente.nome}.\n")
@@ -70,33 +71,34 @@ def atualizar_treeviews():
 
     # Adiciona órgãos
     for o in orgaos:
-        tree_orgaos.insert("", "end", values=(o.nome, o.tempo_isquemia, o.cep))
+        tree_orgaos.insert("", "end", values=(o.nome, o.tempo_isquemia, cidade_via_cep(hospitais, o.cep)))
 
 # Função do botão
 def realizar_busca_interface():
     nome = entry_nome.get().strip()
     origem = var_cidade.get()
+    idade = var_idade.get()
     orgao = var_orgao.get()
-    orgao = [o for o in orgaos if o.nome == orgao]
+    orgao = [o for o in orgaos_possiveis if o.nome == orgao]
     nome_orgao = var_orgao.get()
-
+    
     if not nome or not origem or not nome_orgao:
         messagebox.showerror("Erro", "Preencha todos os campos.")
         return
 
-    # Pega o nome do órgão escolhido no menu (ex: "Coração")
+    novo_paciente = Paciente(nome, date.today(), idade, cep_via_cidade(hospitais, origem), nome_orgao)
+    pacientes.append(novo_paciente)
+    atualizar_treeviews()
 
-    realizar_busca(nome, origem, nome_orgao)
+    realizar_busca(novo_paciente, origem, nome_orgao)
     
-def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
-    # Filtra todos os órgãos disponíveis desse cep
+def realizar_busca(paciente, cidade_origem, nome_orgao):
     orgaos_disponiveis = [o for o in orgaos if o.nome == nome_orgao]
 
     if not orgaos_disponiveis:
-        messagebox.showerror("Erro", f"Não há órgãos cadastrados do cep {nome_orgao}.")
+        messagebox.showerror("Erro", f"Não há órgãos cadastrados do tipo {nome_orgao}.")
         return
 
-    # Associa cada órgão a seu hospital, via CEP
     orgaos_com_hospital = []
     for orgao in orgaos_disponiveis:
         hosp = next((h for h in hospitais if h.cep == orgao.cep), None)
@@ -167,7 +169,7 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
         print(f"\n[!] Transporte especial necessário para o órgão {orgao.nome}.")
         messagebox.showwarning(
             "Atenção",
-            f"Transporte especial necessário para o paciente {nome_paciente}.\n\n"
+            f"Transporte especial necessário para o paciente {paciente.nome}.\n\n"
             f"Existe um {orgao.nome} disponível em {melhor_hospital}.\n"
             f"Entretanto, será preciso utilizar transporte especial para chegar em no máximo {orgao.tempo_isquemia} horas."
         )
@@ -179,7 +181,7 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
         return False
     else:
         print(f"\n>>> Melhor resultado para {orgao.nome}:")
-        print(f"    Paciente: {nome_paciente}")
+        print(f"    Paciente: {paciente.nome}")
         print(f"    Hospital escolhido: {melhor_hospital.nome} ({melhor_hospital.cidade})")
         print(f"    Algoritmo escolhido: {melhor_algoritmo}")
         print(f"    Custo total: {menor_custo:.1f} km")
@@ -187,7 +189,7 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
 
         messagebox.showinfo(
             f"Melhor Resultado - {melhor_algoritmo}",
-            f"Nome do paciente: {nome_paciente}\n"
+            f"Nome do paciente: {paciente.nome}\n"
             f"Órgão: {orgao.nome}\n"
             f"Hospital: {melhor_hospital.nome} ({melhor_hospital.cidade})\n"
             f"Algoritmo: {melhor_algoritmo}\n"
@@ -200,11 +202,14 @@ def realizar_busca(nome_paciente, cidade_origem, nome_orgao):
         canvas.draw()
         if(orgao_final != None):
             orgaos.remove(orgao_final)
+            pacientes.remove(paciente)
         atualizar_treeviews()
         return True
 
 # Carrega dados
 hospitais = carregar_hospitais("dados/hospitais.txt")
+orgaos_possiveis = carregar_orgaos("dados/orgaos.txt")
+
 orgaos = carregar_orgaos("dados/mock_orgaos.txt")
 pacientes = carregar_pacientes("dados/mock_pacientes.txt")
 
@@ -233,6 +238,11 @@ tk.Label(frame_busca, text="Nome do Paciente:").pack(anchor='w')
 entry_nome = tk.Entry(frame_busca)
 entry_nome.pack(fill='x')
 
+tk.Label(frame_busca, text="Idade do paciente:").pack(anchor='w')
+vcmd = (frame_busca.register(somente_inteiros_positivos), "%P")
+var_idade = tk.Entry(frame_busca, validate="key", validatecommand=vcmd)
+var_idade.pack(fill='x')
+
 tk.Label(frame_busca, text="Cidade de Origem:").pack(anchor='w', pady=(5,0))
 var_cidade = tk.StringVar(root)
 var_cidade.set(hospitais[0].cidade)
@@ -240,7 +250,7 @@ combo_cidade = ttk.Combobox(frame_busca, textvariable=var_cidade, values=[h.cida
 combo_cidade.pack(fill='x')
 
 tk.Label(frame_busca, text="Órgão Necessário:").pack(anchor='w', pady=(5,0))
-nomes_unicos = list({o.nome for o in orgaos})
+nomes_unicos = list({o.nome for o in orgaos_possiveis})
 var_orgao = tk.StringVar(root)
 var_orgao.set(nomes_unicos[0])
 combo_orgao = ttk.Combobox(frame_busca, textvariable=var_orgao, values=nomes_unicos, state="readonly")
@@ -253,10 +263,10 @@ btn_atualizar = tk.Button(text="Atualizar fila de espera", command=lambda: atual
 btn_atualizar.pack(pady=5)
 
 # 2. Outro box pra adicionar órgão
-frame_add_orgao = tk.LabelFrame(left_frame, text="Adicionar Órgão", padx=10, pady=10)
+frame_add_orgao = tk.LabelFrame(left_frame, text="Doação de Órgao", padx=10, pady=10)
 frame_add_orgao.pack(fill="x", padx=10, pady=10)
 
-btn_nova_janela = tk.Button(frame_add_orgao, text="Abrir Janela", command=lambda: abrir_janela_adicionar_orgao())
+btn_nova_janela = tk.Button(frame_add_orgao, text="Adicionar Órgão", command=lambda: abrir_janela_adicionar_orgao())
 btn_nova_janela.pack()
 
 # Função que abre nova janela
@@ -265,17 +275,11 @@ def abrir_janela_adicionar_orgao():
     nova_janela.title("Adicionar Órgão")
 
     tk.Label(nova_janela, text="Órgão:").pack(pady=5)
-    nomes_unicos = list({o.nome for o in orgaos})
+    nomes_unicos = list({o.nome for o in orgaos_possiveis})
     var_orgao = tk.StringVar(nova_janela)
     var_orgao.set(nomes_unicos[0])
     entry_orgao = ttk.Combobox(nova_janela, textvariable=var_orgao, values=nomes_unicos, state="readonly")
     entry_orgao.pack()
-
-
-    tk.Label(nova_janela, text="Tempo de Isquemia (horas):").pack(pady=5)
-    vcmd = (nova_janela.register(somente_inteiros_positivos), "%P")
-    entry_tempo = tk.Entry(nova_janela, validate="key", validatecommand=vcmd)
-    entry_tempo.pack()
 
     tk.Label(nova_janela, text="CEP de Origem:").pack(pady=5)
     var_cep = tk.StringVar(nova_janela)
@@ -283,7 +287,7 @@ def abrir_janela_adicionar_orgao():
     entry_cep = ttk.Combobox(
         nova_janela, 
         textvariable=var_cep, 
-        values=[f"{h.cidade} ({h.cep})" for h in hospitais], 
+        values=[f"{h.cidade} - {h.cep}" for h in hospitais], 
         state="readonly"
     )
     entry_cep.pack()
@@ -292,15 +296,18 @@ def abrir_janela_adicionar_orgao():
         nova_janela, 
         text="Salvar", 
         command=lambda: (
-            salvar_orgao(entry_orgao.get(), entry_tempo.get(), var_cep.get().split("(")[1].split(")")[0]), 
+            salvar_orgao(entry_orgao.get(), var_cep.get().split(" - ")[0]), 
             nova_janela.destroy()
         )
     )
     btn_salvar.pack(pady=10)
 
-def salvar_orgao(nome, tempo, cep):
+def salvar_orgao(nome, cep):
     # aqui você salva no seu sistema!
-    novo_orgao = Orgao(nome, cep, tempo)
+    for o in orgaos_possiveis: 
+        if (nome == o.nome): 
+            tempo = o.tempo_isquemia
+    novo_orgao = Orgao(nome, tempo, cep)
     orgaos.append(novo_orgao)
     print(f"Órgão adicionado: {nome}, {tempo} hr, CEP {cep}")
     atualizar_treeviews()
@@ -350,15 +357,15 @@ tree_pacientes.pack(fill='x', padx=5, pady=5)
 tk.Label(right_frame, text="Órgãos Disponíveis:").pack(anchor="w", padx=5, pady=(10, 0))
 
 tree_orgaos = ttk.Treeview(
-    right_frame, columns=("nome", "tempo", "cep"), show="headings", height=5
+    right_frame, columns=("nome", "tempo", "cidade"), show="headings", height=5
 )
 tree_orgaos.heading("nome", text="Nome", anchor='center')
 tree_orgaos.heading("tempo", text="Tempo Isquemia (hrs)", anchor='center')
-tree_orgaos.heading("cep", text="CEP", anchor='center')
+tree_orgaos.heading("cidade", text="Cidade", anchor='center')
 
 tree_orgaos.column("nome", anchor='center')
 tree_orgaos.column("tempo", anchor='center')
-tree_orgaos.column("cep", anchor='center')
+tree_orgaos.column("cidade", anchor='center')
 
 tree_orgaos.pack(fill='x', padx=5, pady=5)
 
