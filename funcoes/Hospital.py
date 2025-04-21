@@ -1,14 +1,12 @@
 class Hospital:
-    def __init__(self, estado, cidade, nome, cep, orgaos_disponiveis=None):
+    def __init__(self, estado, cidade, nome, cep):
         self.estado = estado
         self.cidade = cidade
         self.nome = nome
         self.cep = cep  
-        self.orgaos_disponiveis = orgaos_disponiveis or []
-
 
     def __repr__(self):
-        return f"{self.nome}, ({self.cidade}-{self.estado}, {self.cep})" 
+        return f"{self.nome}, ({self.cidade}-{self.estado})" 
         # Orgaos: {self.orgaos_disponiveis})"
 
 def carregar_hospitais(nome_arquivo):
@@ -27,6 +25,16 @@ def carregar_hospitais(nome_arquivo):
                 localizacoes.append(hospital)
 
     return localizacoes
+
+def cidade_via_cep(hospitais, cep):
+    for hospital in hospitais:
+        if hospital.cep == cep:
+            return hospital.cidade
+
+def cep_via_cidade(hospitais, cidade):
+    for hospital in hospitais:
+        if hospital.cidade == cidade:
+            return hospital.cep
 
 # Exemplo de uso - rodável usando [python funcoes/Hospital.py]
 if __name__ == "__main__":

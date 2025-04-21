@@ -14,7 +14,7 @@ def A_estrela(grafo, cidade_inicial, cidade_meta):
     # Base do algoritmo A*
 
     open_set = []
-    h_inicial = heuristica_A_estrela(cidade_inicial, cidade_meta, coordenadas)
+    h_inicial = heuristica_A_estrela(cidade_inicial, cidade_meta)
     heapq.heappush(open_set, (h_inicial, cidade_inicial, 0))
     
     came_from = {}   # Para reconstruir o caminho
@@ -33,13 +33,12 @@ def A_estrela(grafo, cidade_inicial, cidade_meta):
                 atual = came_from[atual]
             caminho.append(cidade_inicial)
             caminho.reverse()
-            print("\nMeta alcançada!")
             return caminho, g_score[cidade_meta]
         
         # Explora os vizinhos
         for vizinho, custo in grafo.get(atual, []):
             novo_g = g_atual + custo
-            h_vizinho = heuristica_A_estrela(vizinho, cidade_meta, coordenadas)
+            h_vizinho = heuristica_A_estrela(vizinho, cidade_meta)
             f_vizinho = novo_g + h_vizinho
 
             if vizinho not in g_score or novo_g < g_score[vizinho]:
