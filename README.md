@@ -33,3 +33,4 @@ Este sistema pode ser utilizado para pesquisa e experimentação de algoritmos d
 - André Jacob Suaide - 13864673
 - Pedro Arthur Françoso - 12547301
 -  João Victor de Almeoda - 13695424
+-  Daniel Dias Silva Filho - 13677114
