@@ -10,6 +10,5 @@ MG,Belo Horizonte,Hospital João XXIII,30130100
 MG,Uberlândia,CNCDO Oeste Uberlândia,38400204
 RJ,Rio de Janeiro,OPO RJ 1 OPO SUL,20211030
 RJ,Barra Mansa,OPO RJ 5 OPO Barra Mansa,27310420
-SP,São Paulo,OPO HC,05403000
 SP,São José do Rio Preto,OPO / São José do Rio Preto,15090000
 SP,Ribeirão Preto,OPO / Ribeirão Preto,69908650
