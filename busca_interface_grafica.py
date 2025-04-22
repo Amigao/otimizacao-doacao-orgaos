@@ -442,7 +442,7 @@ def abrir_janela_adicionar_orgao():
         nova_janela, 
         text="Salvar", 
         command=lambda: (
-            salvar_orgao(entry_orgao.get(), var_cep.get().split(" - ")[0]), 
+            salvar_orgao(entry_orgao.get(), var_cep.get().split(" - ")[1]), 
             nova_janela.destroy()
         )
     )
