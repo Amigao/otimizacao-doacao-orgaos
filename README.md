@@ -1,6 +1,9 @@
 
 # Sistema de Otimização para Doação de Órgãos
 
+## Execução do programa
+Para executar nossa interface é necessario usar no terminal "python3 busca_interface_grafica.py" nele estara implementado todos possiveis casos de uso do programa e funcionalidades acrescidas e apresentadas.
+
 ## Introdução
 
 A logística de transplantes de órgãos é um desafio complexo que envolve fatores como compatibilidade entre doador e receptor, tempo de transporte e disponibilidade de equipes médicas. Este projeto busca modelar esse problema como um sistema computacional que otimiza a alocação e entrega de órgãos de forma eficiente.
