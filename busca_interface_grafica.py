@@ -22,6 +22,27 @@ from funcoes.Paciente import carregar_pacientes, ordenar_pacientes, Paciente
 
 largura, altura = 500, 280
 
+def sangue_compativel(paciente_tipo, orgao_tipo):
+    """
+    Verifica se o tipo sanguíneo do órgão (doador) é compatível com o do paciente (receptor).
+    
+    Parâmetros:
+    paciente_tipo (str): Tipo sanguíneo do paciente (receptor).
+    orgao_tipo (str): Tipo sanguíneo do doador (órgão).
+
+    Retorna:
+    bool: True se compatível, False caso contrário.
+    """
+    compatibilidade = {
+        'A': ['A', 'O'],
+        'B': ['B', 'O'],
+        'AB': ['A', 'B', 'AB', 'O'],  # Receptor universal
+        'O': ['O']  # Pode receber apenas de O
+    }
+
+    return orgao_tipo in compatibilidade.get(paciente_tipo, [])
+
+
 def somente_inteiros_positivos(valor):
     return valor.isdigit() and int(valor) > 0 if valor else True  # permite vazio temporariamente
 
@@ -197,11 +218,11 @@ def atualizar_banco_de_dados(pacientes, hospitais):
     print("Banco de dados atualizado!")
     atualizar_treeviews()
 
-def salvar_orgao(nome, cep):
+def salvar_orgao(nome, cep, tipo_sanguineo):
     for o in orgaos_possiveis: 
         if (nome == o.nome): 
             tempo = o.tempo_isquemia
-    novo_orgao = Orgao(nome, tempo, cep)
+    novo_orgao = Orgao(nome, tempo, tipo_sanguineo, cep)
     orgaos.append(novo_orgao)
     print(f"Órgão adicionado: {nome}, {tempo} hr, CEP {cep}")
     
@@ -241,6 +262,8 @@ def realizar_busca_interface():
     origem = var_cidade.get()
     idade = var_idade.get()
     orgao = var_orgao.get()
+    tipos_sanguineo = combo_sangue.get()
+    estado_gravidade = combo_gravidade.get()
     orgao = [o for o in orgaos_possiveis if o.nome == orgao]
     nome_orgao = var_orgao.get()
     
@@ -249,7 +272,7 @@ def realizar_busca_interface():
         return
 
     #datetime.combine(date.today(), datetime.min.time()) usado para garantir compatibilidade com o formato de data e permitir comparação entre datas na ordenação
-    novo_paciente = Paciente(nome, datetime.combine(date.today(), datetime.min.time()), idade, cep_via_cidade(hospitais, origem), nome_orgao)
+    novo_paciente = Paciente(nome, datetime.combine(date.today(), datetime.min.time()), idade, cep_via_cidade(hospitais, origem), nome_orgao, tipos_sanguineo, estado_gravidade)
     pacientes.append(novo_paciente)
     atualizar_treeviews()
 
@@ -293,7 +316,7 @@ def buscar_por_paciente(paciente, cidade_origem, orgaos_com_hospital):
     orgao_final = None
     for orgao, hosp in orgaos_com_hospital:
         destino = hosp.cidade
-        print(f"\n  -> Buscando rotas até hospital: {hosp.nome} ({destino})")
+        print(f"\n  -> Buscando rotas até hospital: {hosp.nome} ({destino}). Paciente: {paciente.nome} ({paciente.estado_gravidade})")
         
         encontrou_caminho_viavel = False  # flag local
 
@@ -315,13 +338,16 @@ def buscar_por_paciente(paciente, cidade_origem, orgaos_com_hospital):
                 print(f"        Caminho: {' -> '.join(caminho)}")
                 print(f"        Custo: {custo:.1f} km | Tempo de busca: {tempo_de_busca:.6f} s")
 
-                if custo < menor_custo:
-                    melhor_hospital = hosp
-                    melhor_algoritmo = nome_algoritmo
-                    melhor_caminho = caminho
-                    menor_custo = custo
-                    menor_tempo = tempo_de_busca
-                    orgao_final = orgao
+                if sangue_compativel(paciente.tipo_sanguineo, orgao.tipo_sanguineo):
+                    if custo < menor_custo:
+                        melhor_hospital = hosp
+                        melhor_algoritmo = nome_algoritmo
+                        melhor_caminho = caminho
+                        menor_custo = custo
+                        menor_tempo = tempo_de_busca
+                        orgao_final = orgao
+                else:
+                    print(f"    [X] {nome_algoritmo}: Sangue incompatível entre paciente ({paciente.tipo_sanguineo}) e órgão ({orgao.tipo_sanguineo}).")
 
                 tempos_de_execucao[nome_algoritmo] = min(
                     tempos_de_execucao.get(nome_algoritmo, float('inf')),
@@ -343,7 +369,7 @@ def buscar_por_paciente(paciente, cidade_origem, orgaos_com_hospital):
         return mostrar_aviso(paciente, orgao, melhor_hospital)
     elif not melhor_caminho:
         print(f"[!] Nenhum caminho encontrado para o órgão {orgao.nome}.")
-        messagebox.showerror("Erro", f"Nenhum caminho encontrado para o órgão {orgao.nome}.")
+        messagebox.showerror("Erro", f"Nenhum paciente encontrado para o órgão {orgao.nome}. Adicionado ao banco de órgãos")
         return False
     else:
         print(f"\n>>> Melhor resultado para {orgao.nome}:")
@@ -370,8 +396,14 @@ orgaos_possiveis = carregar_orgaos("dados/orgaos.txt")
 orgaos = carregar_orgaos("dados/mock_orgaos.txt")
 pacientes = carregar_pacientes("dados/mock_pacientes.txt")
 
-if not hospitais or not orgaos or not pacientes:
-    raise RuntimeError("Falha ao carregar dados.")
+if not hospitais:
+    raise RuntimeError("Falha ao carregar dados dos hospitais.")
+
+if not orgaos:
+    raise RuntimeError("Falha ao carregar dados dos órgãos.")
+
+if not pacientes:
+    raise RuntimeError("Falha ao carregar dados dos pacientes.")
 
 root = tk.Tk()
 root.title("Busca de Rotas por Órgão")
@@ -412,6 +444,22 @@ var_orgao.set(nomes_unicos[0])
 combo_orgao = ttk.Combobox(frame_busca, textvariable=var_orgao, values=nomes_unicos, state="readonly")
 combo_orgao.pack(fill='x')
 
+# Tipo Sanguíneo
+tk.Label(frame_busca, text="Tipo Sanguíneo:").pack(anchor='w', pady=(5, 0))
+tipos_sanguineos = ["A", "B", "AB", "O"]
+var_sangue = tk.StringVar(root)
+var_sangue.set(tipos_sanguineos[0])
+combo_sangue = ttk.Combobox(frame_busca, textvariable=var_sangue, values=tipos_sanguineos, state="readonly")
+combo_sangue.pack(fill='x')
+
+# Estado de Gravidade
+tk.Label(frame_busca, text="Estado de Gravidade:").pack(anchor='w', pady=(5, 0))
+estados_gravidade = ["crítico", "urgente", "moderado", "estável"]
+var_gravidade = tk.StringVar(root)
+var_gravidade.set(estados_gravidade[0])
+combo_gravidade = ttk.Combobox(frame_busca, textvariable=var_gravidade, values=estados_gravidade, state="readonly")
+combo_gravidade.pack(fill='x')
+
 btn_busca = tk.Button(frame_busca, text="Realizar Busca", command=realizar_busca_interface)
 btn_busca.pack(pady=(10, 0))
 
@@ -428,26 +476,35 @@ def abrir_janela_adicionar_orgao():
     nova_janela.title("Adicionar Órgão")
 
     tk.Label(nova_janela, text="Órgão:").pack(pady=5)
+    nomes_unicos = list({o.nome for o in orgaos_possiveis})
     var_orgao = tk.StringVar(nova_janela)
+    var_orgao.set(nomes_unicos[0])  
     entry_orgao = ttk.Combobox(nova_janela, textvariable=var_orgao, values=nomes_unicos, state="readonly")
     entry_orgao.pack(fill='x')
 
     tk.Label(nova_janela, text="CEP de Origem:").pack(pady=5)
     var_cep = tk.StringVar(nova_janela)
-    var_cep.set(hospitais[0].cep)
+    var_cep.set(f"{hospitais[0].cidade} - {hospitais[0].cep}") 
     entry_cep = ttk.Combobox(nova_janela, textvariable=var_cep, values=[f"{h.cidade} - {h.cep}" for h in hospitais], state="readonly")
     entry_cep.pack(fill='x')
+
+    # Tipo Sanguíneo
+    tk.Label(nova_janela, text="Tipo Sanguíneo:").pack(pady=5)
+    tipos_sanguineos = ["A", "B", "AB", "O"]
+    var_sangue = tk.StringVar(nova_janela)
+    var_sangue.set(tipos_sanguineos[0])  
+    combo_sangue = ttk.Combobox(nova_janela, textvariable=var_sangue, values=tipos_sanguineos, state="readonly")
+    combo_sangue.pack(fill='x')
 
     btn_salvar = tk.Button(
         nova_janela, 
         text="Salvar", 
         command=lambda: (
-            salvar_orgao(entry_orgao.get(), var_cep.get().split(" - ")[1]), 
+            salvar_orgao(entry_orgao.get(), var_cep.get().split(" - ")[1], var_sangue.get()), 
             nova_janela.destroy()
         )
     )
     btn_salvar.pack(pady=10)
-    nova_janela.update_idletasks()
     largura_nova_janela = nova_janela.winfo_width()
     altura_nova_janela = nova_janela.winfo_height()
 
@@ -457,7 +514,7 @@ def abrir_janela_adicionar_orgao():
     x = (largura_tela // 2) - (largura_nova_janela // 2)
     y = (altura_tela // 2) - (altura_nova_janela // 2)
 
-    nova_janela.wm_geometry(f"{largura}x{altura // 2}+{x}+{y}")
+    nova_janela.wm_geometry(f"{largura}x{altura}+{x}+{y}")
 
 # --- Treeview de Pacientes ---
 tk.Label(right_frame, text="Fila de Espera:").pack(anchor="w", padx=5, pady=(10, 0))
