@@ -1,7 +1,7 @@
-Coração,,4
-Fígado,,12
-Rim,,48
-Pâncreas,,12
-Pulmão,,6
-Intestino,,4
-Córneas,,168
+Coração,,4,
+Fígado,,12,
+Rim,,48,
+Pâncreas,,12,
+Pulmão,,6,
+Intestino,,4,
+Córneas,,168,

@@ -1,14 +1,14 @@
-João da Silva,2025-04-18,05403000,45,Coração
-Maria Oliveira,2025-04-17,19050920,37,Rim
-Carlos Mendes,2025-04-16,13083888,52,Fígado
-Ana Beatriz,2025-04-15,15090000,28,Pâncreas
-Renato Lopes,2025-04-14,18031060,63,Pulmão
-Fernanda Castro,2025-04-13,14048900,50,Coração
-Luciana Alves,2025-04-12,29050720,39,Rim
-Marcos Pereira,2025-04-11,30130100,48,Fígado
-Camila Souza,2025-04-10,38400204,33,Coração
-Bruno Reis,2025-04-09,20211030,41,Rim
-Patrícia Rocha,2025-04-08,27310420,36,Pâncreas
-Eduardo Lima,2025-04-07,05403000,57,Pulmão
-Isabela Martins,2025-04-06,15090000,30,Fígado
-Thiago Cunha,2025-04-05,69908650,62,Coração
+João da Silva,2025-04-18,05403000,45,Coração,A,estável
+Maria Oliveira,2025-04-17,19050920,37,Rim,B,estável
+Carlos Mendes,2025-04-16,13083888,52,Fígado,AB,crítico
+Ana Beatriz,2025-04-15,15090000,28,Pâncreas,O,estável
+Renato Lopes,2025-04-14,18031060,63,Pulmão,B,urgente
+Fernanda Castro,2025-04-13,14048900,50,Coração,O,moderado
+Luciana Alves,2025-04-12,29050720,39,Rim,B,urgente
+Marcos Pereira,2025-04-11,30130100,48,Fígado,O,moderado
+Camila Souza,2025-04-10,38400204,33,Coração,B,crítico
+Bruno Reis,2025-04-09,20211030,41,Rim,AB,urgente
+Patrícia Rocha,2025-04-08,27310420,36,Pâncreas,AB,moderado
+Eduardo Lima,2025-04-07,05403000,57,Pulmão,O,estável
+Isabela Martins,2025-04-06,15090000,30,Fígado,AB,urgente
+Thiago Cunha,2025-04-05,69908650,62,Coração,A,crítico
