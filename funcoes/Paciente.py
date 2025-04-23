@@ -35,8 +35,6 @@ def ordenar_pacientes(pacientes, hospitais, orgao_cidade):
         "estavel": 3
     }
 
-    print(pacientes[0].estado_gravidade)
-    print(pacientes[0].idade)
     return sorted(pacientes, key=lambda paciente: (
         prioridade_gravidade.get(normalizar(paciente.estado_gravidade), 4),
         paciente.data_entrada,

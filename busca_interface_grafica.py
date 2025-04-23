@@ -250,11 +250,11 @@ def atualizar_treeviews():
 
     # Adiciona pacientes
     for p in pacientes:
-        tree_pacientes.insert("", "end", values=(p.nome, p.idade, p.orgao_solicitado, p.cep, p.data_entrada.strftime("%d/%m/%Y")))
+        tree_pacientes.insert("", "end", values=(p.nome, p.idade, p.orgao_solicitado, p.estado_gravidade, p.tipo_sanguineo, p.data_entrada.strftime("%d/%m/%Y")))
 
     # Adiciona órgãos
     for o in orgaos:
-        tree_orgaos.insert("", "end", values=(o.nome, o.tempo_isquemia, cidade_via_cep(hospitais, o.cep)))
+        tree_orgaos.insert("", "end", values=(o.nome, o.tempo_isquemia, o.tipo_sanguineo))
 
 # Função do botão
 def realizar_busca_interface():
@@ -369,7 +369,7 @@ def buscar_por_paciente(paciente, cidade_origem, orgaos_com_hospital):
         return mostrar_aviso(paciente, orgao, melhor_hospital)
     elif not melhor_caminho:
         print(f"[!] Nenhum caminho encontrado para o órgão {orgao.nome}.")
-        messagebox.showerror("Erro", f"Nenhum paciente encontrado para o órgão {orgao.nome}. Adicionado ao banco de órgãos")
+        messagebox.showerror("Erro", f"Pacientes incompatíveis com o órgão {orgao.nome}. Adicionado ao banco de órgãos")
         return False
     else:
         print(f"\n>>> Melhor resultado para {orgao.nome}:")
@@ -520,18 +520,20 @@ def abrir_janela_adicionar_orgao():
 tk.Label(right_frame, text="Fila de Espera:").pack(anchor="w", padx=5, pady=(10, 0))
 
 tree_pacientes = ttk.Treeview(
-    right_frame, columns=("nome", "idade", "orgao", "cep", "data"), show="headings", height=8
+    right_frame, columns=("nome", "idade", "orgao", "gravidade", "tipo", "data"), show="headings", height=8
 )
 tree_pacientes.heading("nome", text="Nome", anchor='center')
 tree_pacientes.heading("idade", text="Idade", anchor='center')
 tree_pacientes.heading("orgao", text="Órgão Solicitado", anchor='center')
-tree_pacientes.heading("cep", text="CEP", anchor='center')
+tree_pacientes.heading("gravidade", text="Estado", anchor='center')
+tree_pacientes.heading("tipo", text="Tipo Sanguíneo", anchor='center')
 tree_pacientes.heading("data", text="Data Entrada", anchor='center')
 
 tree_pacientes.column("nome", anchor='center')
 tree_pacientes.column("idade", anchor='center')
 tree_pacientes.column("orgao", anchor='center')
-tree_pacientes.column("cep", anchor='center')
+tree_pacientes.column("gravidade", anchor='center')
+tree_pacientes.column("tipo", anchor='center')
 tree_pacientes.column("data", anchor='center')
 
 tree_pacientes.pack(fill='x', padx=5, pady=5)
@@ -540,15 +542,15 @@ tree_pacientes.pack(fill='x', padx=5, pady=5)
 tk.Label(right_frame, text="Órgãos Disponíveis:").pack(anchor="w", padx=5, pady=(10, 0))
 
 tree_orgaos = ttk.Treeview(
-    right_frame, columns=("nome", "tempo", "cidade"), show="headings", height=5
+    right_frame, columns=("nome", "tempo", "tipo"), show="headings", height=5
 )
 tree_orgaos.heading("nome", text="Nome", anchor='center')
 tree_orgaos.heading("tempo", text="Tempo Isquemia (hrs)", anchor='center')
-tree_orgaos.heading("cidade", text="Cidade", anchor='center')
+tree_orgaos.heading("tipo", text="Tipo Sanguíneo", anchor='center')
 
 tree_orgaos.column("nome", anchor='center')
 tree_orgaos.column("tempo", anchor='center')
-tree_orgaos.column("cidade", anchor='center')
+tree_orgaos.column("tipo", anchor='center')
 
 tree_orgaos.pack(fill='x', padx=5, pady=5)
 
